@@ -1,0 +1,21 @@
+<div :class="[ 'order-info', { 'show-order-info': is_show_order_info }]">
+    <div class="text-center">
+        <button class="close" @click="handleHideOrderInfo">
+            <img src="@/assets/close1.png" />
+        </button>
+        <p>Địa chỉ lấy hàng: {{order_info.inventory.address}}</p>
+        <p class="mt-2 mb-3 font-weight-bold">Thông tin giao hàng</p>
+        <p class="">Khách hàng: {{order_info.receiver_name}}</p>
+        <p class="">Số điện thoại: {{order_info.receiver_phone}}</p>
+        <p class="">Địa chỉ: {{order_info.receiver_address}}</p>
+        <p class="">Hàng hoá: {{list_product_name}}</p>
+        <p class="text-primary">
+            <span>{{order_info.order_payment.name}}</span>
+            <span> - Chưa tính tiền thu hộ</span>
+        </p>
+        <p class="font-weight-bold" style="font-size:16">Tổng phí giao hàng: {{order_info.shipping_fee | toCurrency}}
+        </p>
+        <button @click="createDelivery()" class="btn-pill mt-3 mb-4 w-100">Xác nhận
+            đơn</button>
+    </div>
+</div>

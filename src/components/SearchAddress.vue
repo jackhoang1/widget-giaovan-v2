@@ -13,28 +13,36 @@
       @click="handleClickInput"
       @change="onChange()"
     />
-    <img src="@/assets/arrow.png" alt id="input_img" @click="handleClickInput" />
     <ul id="autocomplete-results" v-show="isOpen" class="autocomplete-results">
-      <input
-        id="input-search"
-        class="form-control-sm"
-        ref="input_search"
-        type="text"
-        autocomplete="off"
-        v-model="search"
-        @keydown.enter="onEnter"
-        @input="onChange"
-        @change="onChange()"
-      />
+      <div>
+        <input
+          class="input-search form-control-sm"
+          ref="input_search"
+          type="text"
+          autocomplete="off"
+          v-model="search"
+          @keydown.enter="onEnter"
+          @input="onChange"
+          @change="onChange()"
+        />
+      </div>
       <li class="loading" v-if="isLoading">Loading results...</li>
       <li
         v-else
         v-for="(result, i) in results"
         :key="i"
-        @click="setResult(result);onChange();if(getData){getData()}"
+        @click="
+          setResult(result);
+          onChange();
+          if (getData) {
+            getData();
+          }
+        "
         class="autocomplete-result"
         :class="{ 'is-active': i === arrowCounter }"
-      >{{ result[prop_name] }}</li>
+      >
+        {{ result[prop_name] }}
+      </li>
     </ul>
   </div>
 </template>
@@ -90,8 +98,8 @@ export default {
       // first uncapitalize all the things
       this.results = this.list_data_input.filter((item) => {
         return (
-          this.handleSlug(item[this.prop_name]).indexOf(
-            this.handleSlug(this.search)||""
+          this.handleSlug(item[this.prop_name]).includes(
+            this.handleSlug(this.search) || ""
           ) > -1
         );
       });
@@ -183,6 +191,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@mixin imageSelect {
+  background: url("data:image/svg+xml;utf8,<svg fill='black' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>")
+    no-repeat right #eee !important;
+  background-size: 20px;
+}
 $colorHover: #007bff;
 * {
   font-size: 0.9rem;
@@ -207,16 +220,8 @@ $colorHover: #007bff;
 }
 .autocomplete {
   position: relative;
-  #input_img {
-    position: absolute;
-    bottom: 8px;
-    left: 87%;
-    width: 10px;
-    z-index: 2;
-    opacity: 0.7;
-  }
   .input-result {
-    background: #eee;
+    @include imageSelect;
     width: 100%;
     &:focus {
       box-shadow: none;
@@ -230,12 +235,20 @@ $colorHover: #007bff;
     padding: 0;
     margin: 0;
     border: 1px solid #eeeeee;
+    // border-radius: 1rem;
     max-height: 200px;
     overflow-y: auto;
     width: 100%;
-    #input-search {
-      width: 92%;
-      margin: 5px;
+    div {
+      text-align: center;
+      margin: 1rem 0 0.5rem;
+    }
+    .input-search {
+      width: 90% !important;
+      background-color: #fff;
+      border-color: #8bbafe;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
     }
     .autocomplete-result {
       list-style: none;

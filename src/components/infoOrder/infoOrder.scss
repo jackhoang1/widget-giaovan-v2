@@ -1,0 +1,50 @@
+.order-info {
+    position: fixed;
+    bottom: 50%;
+    left: 0;
+    height: 0;
+    width: 100%;
+    opacity: 0;
+    background: #fff;
+    box-shadow: 0 0 20px 0 #0005;
+    transition: all 0.5s ease;
+    overflow: hidden;
+    padding: 0;
+    border-radius: 15px 15px 0 0;
+    .close {
+      // position: absolute;
+      background: silver;
+      // top: 10px;
+      // right: 10px;
+      opacity: 1;
+      border-radius: 50%;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      &:hover {
+          cursor: pointer;
+          opacity: 1 !important;
+          transform: scale(1.1);
+      }
+      &:focus {
+          outline: none;
+      }
+      img {
+          width: 10px;
+          height: 10px;
+      }
+  }
+  }
+  
+  .order-info::-webkit-scrollbar {
+    display: none;
+  }
+  .show-order-info {
+    bottom: 0;
+    max-height: 90vh;
+    overflow-y: scroll;
+    height: initial;
+    opacity: 1;
+    padding: 10px;
+  }

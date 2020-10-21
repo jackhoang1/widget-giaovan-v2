@@ -6,6 +6,6 @@ module.exports = {
         hotOnly: false,
     },
     publicPath: process.env.NODE_ENV === 'production'
-    ? '/demo-widget-order-3rd/'
+    ? '/demo-widget-delivery-v2/'
     : '/'
 }

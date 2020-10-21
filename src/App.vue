@@ -23,8 +23,8 @@
         </div>
       </div>
       <div :class="['select-store', 'mb-5', { 'show-store': show_list_store }]">
-        <div v-if="show_list_store">
-          <p class="text-center mb-5">Danh sách Store</p>
+        <div class="list__store" v-if="show_list_store">
+          <p class="text-center mb-4">Danh sách Store</p>
           <div
             v-for="(item, ind) in list_store"
             class="store"
@@ -40,37 +40,7 @@
     <!--End Xác thực App -->
 
     <div v-if="is_oauth && !is_warning" class="widget">
-      <div class="d-flex header border-bottom">
-        <div
-          class="list-order flex-grow-1 text-center py-2"
-          :class="{ select: isSelectList }"
-          @click="handleClickHeader('list')"
-        >
-          Thông tin
-        </div>
-        <div
-          class="create-order flex-grow-1 text-center py-2"
-          :class="[isSelectList ? '' : 'select']"
-          @click="handleClickHeader('create')"
-        >
-          Tạo đơn
-        </div>
-      </div>
-      <list-order
-        v-show="is_select === 'list'"
-        :store_token="store_token"
-        :payload="payload"
-        :handleEditOrder="handleClickHeader"
-        @platform="getPlatform"
-      />
-      <create-order
-        v-show="is_select === 'create'"
-        :store_token="store_token"
-        :payload="payload"
-        @switch-header="handleClickHeader('list')"
-        @platform_type="payload.platform_type = $event"
-        @msg-info="getMsgInfoDraft"
-      />
+      <Delivery :store_token="store_token" :payload="payload" />
     </div>
     <!-- warning -->
     <div v-if="is_oauth && is_warning" class="auth__warning">
@@ -85,21 +55,13 @@
 </template>
 
 <script>
-import EventBus from "./EventBus.js";
 import Restful from "@/services/resful.js";
-import CreateOrder from "@/components/order/Order.vue";
-import ListOrder from "@/components/order/ListOrder.vue";
+import Delivery from "@/components/delivery/Delivery.vue";
+import { APICMS, ApiBase, secretKey } from "@/services/domain.js";
 
 let urlString = location.href;
 let url = new URL(urlString);
 let access_token = url.searchParams.get("access_token");
-
-// const APICMS = "http://localhost:1337"; //dev
-const APICMS = "https://devbbh.tk"; //dev
-// const APICMS = "https://ext.botup.io"; //product
-
-const ApiBase = "https://app.devchatbox.tk"; //dev
-// const ApiBase = "https://chatbox-app.botbanhang.vn"; //product
 
 const Toast = Swal.mixin({
   toast: true,
@@ -128,20 +90,14 @@ const Toast2 = Swal.mixin({
 
 export default {
   components: {
-    ListOrder,
-    CreateOrder,
+    Delivery,
   },
   data() {
     return {
       is_oauth: false,
       is_warning: false,
-      // secretKey: '2dd3816056a04c70ad154d3943bb16bd', //product
-      // secretKey: "2218ef13a45c4fd9ade2d049db2ef6f1", //demo-product
-      //   secretKey: "f5ca4cd874a6427e83ed0441e61355ab", //demo-product-local
-      secretKey: "6e6d71d51a234aec9cde5f7748dd9e78", //dev-local
+      secretKey: secretKey,
       access_token: access_token,
-      is_select: "list",
-
       cms_account: "",
       cms_password: "",
 
@@ -154,9 +110,6 @@ export default {
         psid: "",
         fb_page_id: "",
         token_bbh: "",
-        delivery_platform: "",
-        payment_platform: "",
-        platform_type: "",
         name: "",
         phone: "",
         email: "",
@@ -167,11 +120,6 @@ export default {
   },
   async created() {
     await this.partnerAuth();
-  },
-  computed: {
-    isSelectList() {
-      return this.is_select === "list";
-    },
   },
   methods: {
     async partnerAuth() {
@@ -221,14 +169,11 @@ export default {
             customer.conversation_contact.client_phone
           ) {
             this.payload.phone = customer.conversation_contact.client_phone
-              //   .split("+84")
-              //   .join("0")
               .split(".")
               .join("")
               .split(" ")
               .join("");
           }
-          await this.createCustomer();
           this.handleLocalStorage();
         }
       } catch (error) {
@@ -307,21 +252,6 @@ export default {
         });
       }
     },
-    getPlatform(delivery_platform, payment_platform) {
-      this.payload.delivery_platform = delivery_platform;
-      this.payload.payment_platform = payment_platform;
-    },
-    getMsgInfoDraft(msg_info) {
-      if (msg_info) {
-        this.payload.psid = msg_info.psid;
-        this.payload.token_bbh = msg_info.token_bbh;
-        return;
-      }
-      Toast2.fire({
-        icon: "error",
-        title: 'Không có thông tin msg_info',
-      });
-    },
     handleLocalStorage() {
       let order_3d_platform = JSON.parse(
         localStorage.getItem("order_3d_platform")
@@ -343,34 +273,6 @@ export default {
         JSON.stringify(order_3d_platform)
       );
       this.runOAuth();
-    },
-    async createCustomer() {
-      try {
-        let path = `${APICMS}/v1/selling-page/customer/customer_find_or_create`;
-        let headers = { Authorization: this.store_token };
-        let body = {
-          fb_page_id: this.payload.fb_page_id,
-          fb_client_id: this.payload.psid,
-          full_name: this.payload.name,
-          phone: this.payload.phone,
-          email: this.payload.email,
-        };
-
-        let create_customer = await Restful.post(path, body, null, headers);
-        if (
-          create_customer.data &&
-          create_customer.data.data &&
-          create_customer.data.data.id
-        ) {
-          this.payload.customer_id = create_customer.data.data.id;
-        }
-      } catch (e) {
-        console.log(e);
-        Toast2.fire({
-          icon: "error",
-          title: "error api customer_find_or_create",
-        });
-      }
     },
     async runOAuth() {
       try {
@@ -410,28 +312,21 @@ export default {
         });
       }
     },
-    handleClickHeader(ele) {
-      this.is_select = ele;
-      if (ele === "list") {
-        EventBus.$emit("disable-update-order");
-      }
-    },
   },
 };
 </script>
 
 <style lang="scss">
 @mixin tooltip-position {
+  white-space: nowrap;
   visibility: hidden;
-  width: 12rem;
   background-color: #555;
   color: #fff;
   text-align: center;
   border-radius: 6px;
-  padding: 0.5rem 0.3rem;
+  padding: 0.3rem 0.3rem;
   position: absolute;
   z-index: 1;
-  margin-left: -6rem;
   opacity: 0;
   transition: opacity 0.3s;
 }
@@ -440,6 +335,22 @@ export default {
   position: absolute;
   border-width: 5px;
   border-style: solid;
+}
+@mixin textDecoration {
+  text-align: center;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -70%);
+  background: #fff;
+  font-size: 1rem;
+  color: #777777;
+}
+@mixin imageSelect {
+  background: url("data:image/svg+xml;utf8,<svg fill='black' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>")
+    no-repeat right #eee !important;
+  background-size: 20px;
+  appearance: none;
 }
 * {
   font-size: 13px;
@@ -457,11 +368,6 @@ export default {
     opacity: 0.5;
     margin: 1rem 0 1rem 0;
   }
-  //   input,
-  //   textarea {
-  //     border-radius: 1rem;
-  //     padding: 0 1rem;
-  //   }
   &::-webkit-scrollbar {
     display: none;
   }
@@ -478,43 +384,21 @@ body {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
-// .disable-scroll {
-//   overflow: hidden;
-//   height: 100vh;
-// }
-// p {
-//   margin-top: 0;
-//   margin-bottom: 1rem;
-// }
-// button {
-//   border-radius: 0;
-// }
-// hr {
-//   opacity: 0.5;
-// }
-// button:focus {
-//   outline: 1px dotted;
-//   outline: 5px auto -webkit-focus-ring-color;
-// }
-
 /* Auth ---- */
 .auth {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 1rem;
+  padding: 1rem 10%;
   top: 12%;
   width: 100%;
   z-index: 999;
   .auth__activate {
     position: relative;
-    background: #f6f6f6;
-    border: 1px solid rgba(0, 0, 0, 0.125);
+    background: #ededed;
     border-radius: 1rem;
     margin-top: 5%;
     padding: 5% 10%;
-    -webkit-box-shadow: 0px 1px 5px rgba(126, 142, 177, 0.2);
-    box-shadow: 0 1px 5px rgba(126, 142, 177, 0.2);
+    -webkit-box-shadow: 0 0px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0px 10px rgba(0, 0, 0, 0.4);
   }
   p {
     font-size: 1.3rem;
@@ -549,21 +433,27 @@ body {
     opacity: 0;
     height: 0;
     transition: all 0.4s ease-out 0.2s;
+    .list__store {
+      padding: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    }
     .store {
       cursor: pointer;
       text-align: center;
-      padding: 1rem 1rem;
-      border: 2px solid #0001;
-      border-radius: 5px;
+      padding: 0.5rem 1rem;
+      margin: 0.5rem 0;
+      color: rgb(24, 24, 24);
+      border-radius: 1rem;
       font-weight: bold;
-      border-bottom: none;
-      background: #fff;
-      transition: transform 0.2s ease-out, border-bottom 0s,
-        background 0.7s ease-out;
+      background: #ededed;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease-out, background 0.7s ease-out;
       &:hover {
-        transform: translateY(-5px) scale(1.03);
-        border-bottom: 2px solid #0001;
-        background: #ddd;
+        transform:  scale(1.03);
+        background: #ed5a29;
+        color: #fff;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
       }
       &:active {
         transform: translateY(-3px);
@@ -586,29 +476,7 @@ body {
     background: #fff;
   }
 }
-
-@media screen and (min-width: 400px) {
-  .auth {
-    width: 70%;
-  }
-  .auth p {
-    font-size: 1.3rem;
-  }
-}
-
 /* --------------- */
-
-.widget .header {
-  cursor: pointer;
-  user-select: none;
-}
-.widget .header > div {
-  font-weight: bold;
-  font-size: 1rem;
-}
-.widget .header .select {
-  border-bottom: 2px solid #0d6efd;
-}
 
 .auth__warning {
   padding: 0 1.5rem 0 1.5rem;
@@ -622,15 +490,12 @@ body {
   }
 }
 .all__text--decoration {
-  text-align: center;
+  @include textDecoration;
   width: 100px;
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, -70%);
-  background: #fff;
-  font-size: 1rem;
-  color: #777777;
+}
+.all__text--decoration-long {
+  @include textDecoration;
+  width: 150px;
 }
 .btn-pill {
   font-size: 0.9rem;
@@ -640,32 +505,40 @@ body {
   outline: none;
   border: none;
   border-radius: 1rem;
-  -webkit-box-shadow: 0px 1px 3px rgba(126, 142, 177, 0.2);
-  box-shadow: 0 1px 3px rgba(126, 142, 177, 0.2);
+  -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
   &:hover {
     background: #0167ff;
     transition: transform 0.15s, background 0.15s;
     -webkit-transform: scale(1.03);
     transform: scale(1.03);
-    -webkit-box-shadow: 0px 1px 3px rgba(126, 142, 177, 0.2);
-    box-shadow: 0px 1px 3px rgba(126, 142, 177, 0.2);
+    -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
   }
 }
 .form-control-sm {
   height: calc(1.5em + 0.5rem + 2px);
-  //   padding: 0.25rem 0.5rem;
-  /* color: #495057; */
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+  color: #000000;
   font-size: 0.875rem;
   line-height: 1.5;
-  // border-radius: 0.2rem;
+  border-radius: 0.2rem;
   /* border: 1px solid #ced4da; */
-  // border: none;
-  border-radius: 1rem;
-  padding: 0.25rem 1rem;
-  appearance: none;
-  background-color: #fff;
+  border: none;
+  // appearance: none;
+  background: #eee;
   background-clip: padding-box;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  option {
+    background: #ffffff;
+  }
+  &:focus {
+    box-shadow: none;
+    background: #eee;
+    outline: none;
+    // border: none;
+  }
 }
 .tooltip {
   position: relative;
@@ -675,6 +548,7 @@ body {
     @include tooltip-position;
     bottom: 125%;
     left: 50%;
+    transform: translateX(-50%);
     &::after {
       @include tooltip-position-after;
       top: 100%;
@@ -685,8 +559,9 @@ body {
   }
   .tooltip-bottom {
     @include tooltip-position;
-    top: 135%;
+    top: 100%;
     left: 50%;
+    transform: translateX(-50%);
     &::after {
       @include tooltip-position-after;
       bottom: 100%;
@@ -697,9 +572,10 @@ body {
   }
   .tooltip-right {
     @include tooltip-position;
-    top: -5px;
-    left: 125%;
+    top: 0;
+    left: 100%;
     &::after {
+      @include tooltip-position-after;
       top: 50%;
       right: 100%;
       margin-top: -0.5rem;
@@ -708,9 +584,9 @@ body {
   }
   .tooltip-left {
     @include tooltip-position;
-    top: -5px;
+    top: 0;
     bottom: auto;
-    right: 128%;
+    right: 100%;
     &::after {
       @include tooltip-position-after;
       top: 50%;
@@ -728,5 +604,19 @@ body {
       opacity: 1;
     }
   }
+}
+.validate-failed {
+  border: 1px solid red !important;
+}
+.validate-failed-address {
+  // margin-bottom: 1rem !important;
+  padding: 0 !important;
+  margin-left: 5px !important;
+  margin-right: 5px !important;
+  border-radius: 1rem !important;
+  border: 1px solid red !important;
+}
+select {
+  @include imageSelect;
 }
 </style>
