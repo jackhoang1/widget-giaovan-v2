@@ -253,24 +253,24 @@ export default {
       }
     },
     handleLocalStorage() {
-      let order_3d_platform = JSON.parse(
-        localStorage.getItem("order_3d_platform")
+      let data = JSON.parse(
+        localStorage.getItem("widget_delivery")
       );
-      if (order_3d_platform && order_3d_platform.store_email) {
-        this.payload.store_email = order_3d_platform.store_email;
+      if (data && data.store_email) {
+        this.payload.store_email = data.store_email;
       }
     },
     handleChooseStore(item) {
       this.store_token = item.access_token;
-      localStorage.removeItem("order_3d_platform");
-      let order_3d_platform = {};
+      localStorage.removeItem("widget_delivery");
+      let data = {};
       if (item.store_email) {
         this.payload.store_email = item.store_email;
-        order_3d_platform["store_email"] = item.store_email;
+        data["store_email"] = item.store_email;
       }
       localStorage.setItem(
-        "order_3d_platform",
-        JSON.stringify(order_3d_platform)
+        "widget_delivery",
+        JSON.stringify(data)
       );
       this.runOAuth();
     },
@@ -330,12 +330,14 @@ export default {
   opacity: 0;
   transition: opacity 0.3s;
 }
+
 @mixin tooltip-position-after {
   content: "";
   position: absolute;
   border-width: 5px;
   border-style: solid;
 }
+
 @mixin textDecoration {
   text-align: center;
   position: absolute;
@@ -346,17 +348,20 @@ export default {
   font-size: 1rem;
   color: #777777;
 }
+
 @mixin imageSelect {
   background: url("data:image/svg+xml;utf8,<svg fill='black' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>")
     no-repeat right #eee !important;
   background-size: 20px;
   appearance: none;
 }
+
 * {
   font-size: 13px;
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+
   input,
   textarea,
   select {
@@ -364,14 +369,17 @@ export default {
     border-radius: 1rem !important;
     padding: 0.25rem 1rem !important;
   }
+
   hr {
     opacity: 0.5;
     margin: 1rem 0 1rem 0;
   }
+
   &::-webkit-scrollbar {
     display: none;
   }
 }
+
 body {
   margin: 0;
   font-family: var(--bs-font-sans-serif);
@@ -391,6 +399,7 @@ body {
   top: 12%;
   width: 100%;
   z-index: 999;
+
   .auth__activate {
     position: relative;
     background: #ededed;
@@ -400,17 +409,21 @@ body {
     -webkit-box-shadow: 0 0px 10px rgba(0, 0, 0, 0.4);
     box-shadow: 0 0px 10px rgba(0, 0, 0, 0.4);
   }
+
   p {
     font-size: 1.3rem;
     font-weight: bold;
   }
+
   .sign {
     width: 100%;
+
     input {
       width: 100%;
       height: 35px;
       //   background: #eeeeee;
     }
+
     button {
       font-weight: bold;
       box-shadow: 0 5px 15px 0 #007bff30;
@@ -418,26 +431,31 @@ body {
       border-radius: 25px;
       padding: 0.5rem 3.5rem;
       margin-top: 1.5rem;
+
       &:hover {
         background: #007bff;
         box-shadow: 0 5px 20px 0 #007bff30;
       }
+
       &:focus {
         box-shadow: 0 5px 20px 0 #007bff30 !important;
         background: #007bff !important;
       }
     }
   }
+
   .select-store {
     width: 100%;
     opacity: 0;
     height: 0;
     transition: all 0.4s ease-out 0.2s;
+
     .list__store {
       padding: 1rem;
       border-radius: 1rem;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
     }
+
     .store {
       cursor: pointer;
       text-align: center;
@@ -449,24 +467,29 @@ body {
       background: #ededed;
       box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
       transition: transform 0.2s ease-out, background 0.7s ease-out;
+
       &:hover {
-        transform:  scale(1.03);
+        transform: scale(1.03);
         background: #ed5a29;
         color: #fff;
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
       }
+
       &:active {
         transform: translateY(-3px);
       }
     }
+
     .store:last-child {
       border-bottom: 2px solid #0001;
     }
   }
+
   .show-store {
     height: initial;
     opacity: 1;
   }
+
   .overlay {
     position: absolute;
     top: 0;
@@ -476,10 +499,12 @@ body {
     background: #fff;
   }
 }
+
 /* --------------- */
 
 .auth__warning {
   padding: 0 1.5rem 0 1.5rem;
+
   .auth__activate {
     position: relative;
     background: #f6f6f6;
@@ -489,14 +514,17 @@ body {
     padding: 10% 10% 5% 10%;
   }
 }
+
 .all__text--decoration {
   @include textDecoration;
   width: 100px;
 }
+
 .all__text--decoration-long {
   @include textDecoration;
   width: 150px;
 }
+
 .btn-pill {
   font-size: 0.9rem;
   background: #0d6efd;
@@ -507,6 +535,7 @@ body {
   border-radius: 1rem;
   -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+
   &:hover {
     background: #0167ff;
     transition: transform 0.15s, background 0.15s;
@@ -516,6 +545,7 @@ body {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
   }
 }
+
 .form-control-sm {
   height: calc(1.5em + 0.5rem + 2px);
   width: 100%;
@@ -524,31 +554,40 @@ body {
   font-size: 0.875rem;
   line-height: 1.5;
   border-radius: 0.2rem;
-  /* border: 1px solid #ced4da; */
   border: none;
-  // appearance: none;
   background: #eee;
   background-clip: padding-box;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
   option {
     background: #ffffff;
   }
+
   &:focus {
     box-shadow: none;
     background: #eee;
     outline: none;
-    // border: none;
   }
 }
+
 .tooltip {
   position: relative;
   display: inline-block;
-  // border-bottom: 1px dotted black;
+  &:hover {
+    .tooltip-left,
+    .tooltip-right,
+    .tooltip-top,
+    .tooltip-bottom {
+      visibility: visible;
+      opacity: 1;
+    }
+  }
   .tooltip-top {
     @include tooltip-position;
     bottom: 125%;
     left: 50%;
     transform: translateX(-50%);
+
     &::after {
       @include tooltip-position-after;
       top: 100%;
@@ -562,6 +601,7 @@ body {
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
+
     &::after {
       @include tooltip-position-after;
       bottom: 100%;
@@ -574,6 +614,7 @@ body {
     @include tooltip-position;
     top: 0;
     left: 100%;
+
     &::after {
       @include tooltip-position-after;
       top: 50%;
@@ -595,16 +636,12 @@ body {
       border-color: transparent transparent transparent #555;
     }
   }
-  &:hover {
-    .tooltip-left,
-    .tooltip-right,
-    .tooltip-top,
-    .tooltip-bottom {
-      visibility: visible;
-      opacity: 1;
-    }
+  img {
+    height: 12px;
+    width: 12px;
   }
 }
+
 .validate-failed {
   border: 1px solid red !important;
 }
@@ -616,7 +653,39 @@ body {
   border-radius: 1rem !important;
   border: 1px solid red !important;
 }
+
 select {
   @include imageSelect;
+}
+.switch {
+  width: 40px;
+  height: 16px;
+  box-shadow: 0 0 2px;
+  border-radius: 16px;
+  background: red;
+  display: flex;
+  justify-content: flex-start;
+  align-content: center;
+  transition: background 0.3s ease-out;
+  &:hover {
+    cursor: pointer;
+  }
+  .circle {
+    margin: 2px;
+    border-radius: 50%;
+    box-shadow: 0 0 1px;
+    background: white;
+    padding: 6px;
+    transition: transform 0.3s ease-out;
+    transform: translateX(0);
+  }
+  .circle-on {
+    transition: transform 0.3s ease-out;
+    transform: translateX(24px) !important;
+  }
+}
+.switch-on {
+  background: green !important;
+  // justify-content: flex-end !important;
 }
 </style>

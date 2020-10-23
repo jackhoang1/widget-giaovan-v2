@@ -54,10 +54,10 @@ export default {
                 receiver_ward: "",
                 receiver_district: "",
                 receiver_province: "",
-                weight: 200,
-                length: 10,
-                width: 10,
-                height: 10,
+                weight: 500,
+                length: 20,
+                width: 20,
+                height: 20,
                 product_type: "",
                 order_payment: "",
                 order_service: "",
@@ -77,6 +77,7 @@ export default {
                 order_id: false,
                 inventory: false,
                 country: false,
+                sender_email: false,
                 receiver_name: false,
                 receiver_phone: false,
                 receiver_street: false,
@@ -109,10 +110,12 @@ export default {
             is_show_popup: false,
             is_show_note: false,
             is_show_order_info: false,
-            is_loading: false
+            is_loading: false,
+            switch_order_id: true
         };
     },
     async created() {
+        this.readSwitchLocal
     },
     async mounted() {
         await this.getInventory()
@@ -135,6 +138,14 @@ export default {
                 this.order_info.order_payment = this.list_order_payment_ghtk[0]
                 this.order_info.other_info.transport = 'road'
             }
+        },
+        readSwitchLocal() {
+            let switch_order_id = JSON.parse(localStorage.getItem('widget_delivery_switch_order_id'))
+            console.log('switch_order_id', typeof switch_order_id);
+            if (switch_order_id) {
+                return this.switch_order_id = true
+            }
+            this.switch_order_id = false
         },
     },
     methods: {
@@ -335,6 +346,7 @@ export default {
                     get_shipping_fee.data.data.data
                 ) {
                     this.coupon_real_ghn = true
+                    this.order_info.shipping_fee = 0
                     return this.order_info.shipping_fee = get_shipping_fee.data.data.data.total || get_shipping_fee.data.data.data.fee     //GHN||GHTK
                 }
                 this.order_info.shipping_fee = 0
@@ -362,7 +374,7 @@ export default {
                 return this.swalToast('Bạn chưa nhập số lượng sản phẩm', 'warning')
             }
             let product = { name: this.product.name, weight: Number(this.product.weight / 1000), quantity: Number(this.product.quantity) }
-            if (this.delivery_platform == 'GHTK') delete product['weight']
+            if (this.delivery_platform != 'GHTK') delete product['weight']
             this.list_product.push(product)
             this.product.name = ''
             this.product.weight = 0
@@ -461,7 +473,6 @@ export default {
                 this.timer = null;
             }
             this.timer = setTimeout(() => {
-                this.order_info.shipping_fee = 0
                 this.handleChangeSize()
             }, 1000);
         },
@@ -471,7 +482,6 @@ export default {
                 this.timer = null;
             }
             this.timer = setTimeout(() => {
-                this.order_info.shipping_fee = 0
                 this.handleChangePrice()
             }, 1000);
         },
@@ -583,11 +593,22 @@ export default {
         validateEmail(email) {
             let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
             let is_email = reg.test(email)
-            if (is_email) {
-                return true;
+            if (!is_email) {
+                this.swalToast('Email không hợp lệ!', 'error')
             }
-            this.validate_failed.receiver_email = !is_email ? true : false
-            this.swalToast('Email không hợp lệ!', 'error')
+            return is_email
+        },
+        validateEmailReceiver(email) {
+            let is_email = this.validateEmail(email)
+            if (!is_email)
+                this.validate_failed.receiver_email = !is_email ? true : false
+            return is_email
+        },
+        validateEmailSender(email) {
+            let is_email = this.validateEmail(email)
+            if (!is_email)
+                this.validate_failed.sender_email = !is_email ? true : false
+            return is_email
         },
         changeClassValidate() {
             this.validate_failed.inventory = !this.order_info.inventory ? true : false
@@ -610,18 +631,21 @@ export default {
             }
             if (this.delivery_platform == 'VIETTEL_POST') {
                 this.validate_failed.product_type = !this.order_info.product_type ? true : false
+                this.validate_failed.sender_email = !this.order_info.sender_email ? true : false
             }
             if (this.delivery_platform == 'GHN') {
                 this.validate_failed.required_note = !this.order_info.required_note ? true : false
                 this.validate_failed.coupon_real_ghn = !this.coupon_real_ghn ? true : false
             }
             if (this.delivery_platform == 'GHTK') {
+                this.validate_failed.order_id = !this.order_info.order_id ? true : false
                 this.validate_failed.other_info.transport = !this.order_info.other_info.transport ? true : false
                 this.validate_failed.weight = !this.order_info.weight || this.order_info.weight / 1000 > 20 ? true : false
                 this.validate_failed.order_value_num = !this.order_info.order_value_num || this.order_info.order_value_num >= 20000000 ? true : false
             }
         },
         validateCreateDelivery() {
+            console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaa');
             this.changeClassValidate()
             if (
                 !this.order_info.inventory ||
@@ -636,21 +660,30 @@ export default {
                 !this.order_info.order_payment ||
                 !this.order_info.weight
             ) { return false }
+            console.log('bbbbbbbbbbbbbbbb');
             if (this.list_product.length == 0) {
                 this.swalToast('Hãy thêm hàng hoá giao vận', 'warning')
                 return 'failed'
             }
             if (!this.validatePhone(this.order_info.receiver_phone)) { return 'failed' }
-            if (!this.validateEmail(this.order_info.receiver_email)) { return 'failed' }
+            if (!this.validateEmailReceiver(this.order_info.receiver_email)) { return 'failed' }
+            console.log('ccccccccccccccccccccccc');
             if (this.delivery_platform == 'VIETTEL_POST' || this.delivery_platform == 'GHN') {
                 if (!this.order_info['order_service'] || this.order_info['length'] <= 0 || this.order_info['width'] <= 0 || this.order_info['height'] <= 0) { return false }
             }
-            if (this.delivery_platform == 'VIETTEL_POST' && !this.order_info.product_type) { return false }
+            if (this.delivery_platform == 'VIETTEL_POST') {
+                console.log('2222222222222');
+                if (!this.order_info.product_type || !this.order_info.sender_email) {
+                    return false
+                }
+                console.log('3333333333333333');
+                if (!this.validateEmailSender(this.order_info.sender_email)) { return 'failed' }
+            }
             if (this.delivery_platform == 'GHN') {
                 if (!this.order_info.required_note || !this.coupon_real_ghn == true) { return false }
             }
             if (this.delivery_platform == 'GHTK') {
-                if (!this.order_info.other_info.transport) {
+                if (!this.order_info.other_info.transport || !this.order_info.order_id) {
                     return false
                 }
                 if (this.order_info.weight / 1000 > 20) {
@@ -765,16 +798,13 @@ export default {
             return this.order_info.order_id = id
         },
         handleSaveInfo() {
-            // if (this.option_save_info) {
-            let data = JSON.parse(localStorage.getItem('order_3d_platform'))
-            console.log('localstorerage', { ...data, 'store_email': this.store_email });
-            localStorage.setItem('order_3d_platform', JSON.stringify({ ...data, 'option_save_info': this.option_save_info, 'sender_email': this.order_info.sender_email }))
-            // }
+            let data = JSON.parse(localStorage.getItem('widget_delivery'))
+            localStorage.setItem('widget_delivery', JSON.stringify({ ...data, 'option_save_info': this.option_save_info, 'sender_email': this.order_info.sender_email }))
         },
         getEmailLocal() {
             if (this.delivery_platform == "VIETTEL_POST") {
-                let data = JSON.parse(localStorage.getItem('order_3d_platform'))
-                if (data.option_save_info) {
+                let data = JSON.parse(localStorage.getItem('widget_delivery'))
+                if (data && data.option_save_info) {
                     return this.order_info.sender_email = data.sender_email
                 }
                 this.option_save_info = false
@@ -793,10 +823,17 @@ export default {
             this.handleAddress()
             this.infoDelivery()
             this.is_show_order_info = true
-
         },
         handleHideOrderInfo() {
             this.is_show_order_info = false
+        },
+        handleSwitch() {
+            this.switch_order_id = !this.switch_order_id
+            localStorage.setItem('widget_delivery_switch_order_id', JSON.stringify(this.switch_order_id))
+            if (this.switch_order_id) {
+                return this.handleCreateOrderId()
+            }
+            this.order_info.order_id = ''
         },
         async checkKeyBoard(ele_id, event, formatNumber, string) {
             if (

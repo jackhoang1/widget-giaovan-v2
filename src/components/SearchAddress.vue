@@ -167,15 +167,12 @@ export default {
   watch: {
     list_data_input: function (val, oldValue) {
       // actually compare them
-      console.log("this.list_data_input", this.list_data_input);
       if (val.length !== oldValue.length) {
         this.results = val;
         this.isLoading = false;
       }
     },
     watch_data: function (val, oldValue) {
-      // console.log("what data val", val);
-      // console.log("what data oldValue", oldValue);
       this.result = "";
     },
   },

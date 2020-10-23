@@ -25,10 +25,8 @@ body > div {
         padding-bottom: 1rem;
         text-align: center;
     }
-    .inventory {
-        position: relative;
-        // padding-bottom: 1rem;
-    }
+    .order__id,
+    .inventory,
     .product__add,
     .product__size,
     .service,
@@ -61,6 +59,11 @@ body > div {
                 width: 17px;
             }
         }
+    }
+}
+.order__id{
+    p{
+        cursor: help;
     }
 }
 .cod,

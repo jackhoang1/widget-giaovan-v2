@@ -87,6 +87,12 @@ img {
 .p-0 {
     padding: 0 !important;
 }
+.mr-3,.mx-3 {
+    margin-right:1rem!important
+}
+.ml-3,.mx-3{
+    margin-left:1rem!important
+}
 .mx-2 {
     margin-right: 0.5rem !important;
     margin-left: 0.5rem !important;
@@ -214,16 +220,14 @@ img {
         transition: none;
     }
 }
-.form-control:focus,
-.form-control-sm:focus {
+.form-control:focus {
     /* color: #495057; */
     background-color: #fff;
     border-color: #8bbafe;
     outline: 0;
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
-.form-control::placeholder,
-.form-control-sm::placeholder {
+.form-control::placeholder{
     color: #6c757d;
     opacity: 1;
 }
