@@ -253,9 +253,7 @@ export default {
       }
     },
     handleLocalStorage() {
-      let data = JSON.parse(
-        localStorage.getItem("widget_delivery")
-      );
+      let data = JSON.parse(localStorage.getItem("widget_delivery"));
       if (data && data.store_email) {
         this.payload.store_email = data.store_email;
       }
@@ -268,10 +266,7 @@ export default {
         this.payload.store_email = item.store_email;
         data["store_email"] = item.store_email;
       }
-      localStorage.setItem(
-        "widget_delivery",
-        JSON.stringify(data)
-      );
+      localStorage.setItem("widget_delivery", JSON.stringify(data));
       this.runOAuth();
     },
     async runOAuth() {
@@ -544,6 +539,14 @@ body {
     -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
   }
+  &:focus {
+    background: #0167ff;
+    transition: transform 0.15s, background 0.15s;
+    -webkit-transform: scale(1.03);
+    transform: scale(1.03);
+    -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+  }
 }
 
 .form-control-sm {
@@ -564,7 +567,7 @@ body {
   }
 
   &:focus {
-    box-shadow: none;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
     background: #eee;
     outline: none;
   }
@@ -686,6 +689,5 @@ select {
 }
 .switch-on {
   background: green !important;
-  // justify-content: flex-end !important;
 }
 </style>

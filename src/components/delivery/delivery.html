@@ -7,22 +7,25 @@
             <hr>
             <div class="all__text--decoration mb-0">Mã đơn hàng</div>
             <div class="form-row">
-                <div class="col">
+                <div class="col-9">
                     <input class="form-control-sm" :class="{'validate-failed':validate_failed.order_id}" type="text"
                         v-model="order_info.order_id" placeholder="Mã đơn">
                 </div>
-                <div class="order__switch col d-flex justify-content-start align-items-start">
-                    <div class="mx-2 mt-2">
-                        <div class="switch" :class="{'switch-on':switch_order_id}" @click="handleSwitch">
-                            <div class="circle" :class="{'circle-on':switch_order_id}"></div>
+                <div class="col-3">
+                    <div class="order__switch d-flex justify-content-start align-items-start">
+                        <div class="mt-2">
+                            <div class="switch" :class="{'switch-on':switch_order_id}" @click="handleSwitch">
+                                <div class="circle" :class="{'circle-on':switch_order_id}"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="mt-2">
-                        <div class="d-flex" v-if="switch_order_id">
-                            <p class="tooltip text-primary">Bật<span class="tooltip-top">Tự động tạo mã đơn</span></p>
-                        </div>
-                        <div class="d-flex" v-else>
-                            <p class="tooltip text-danger">Tắt<span class="tooltip-top">Tự nhập mã đơn</span></p>
+                        <div class="mt-2">
+                            <div class="d-flex" v-if="switch_order_id">
+                                <p class="tooltip text-primary pl-2">Bật<span class="tooltip-left">Tự động tạo mã đơn</span>
+                                </p>
+                            </div>
+                            <div class="d-flex" v-else>
+                                <p class="tooltip text-danger pl-2">Tắt<span class="tooltip-left">Tự nhập mã đơn</span></p>
+                            </div>
                         </div>
                     </div>
                 </div>
