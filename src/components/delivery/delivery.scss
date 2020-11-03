@@ -1,68 +1,64 @@
-html {
-    font-size: 13px;
-}
 body::-webkit-scrollbar {
     display: none;
-}
-* {
-    font-size: 0.9rem;
 }
 .disable-scroll {
     overflow: hidden;
     height: 100vh;
 }
-body > div {
-    margin: 0;
-    padding: 0;
-}
-
-.main {
-    background: #fff;
-    padding: 1rem;
-    .title {
-        font-size: 1rem;
-        font-weight: bold;
-        padding-bottom: 1rem;
-        text-align: center;
-    }
-    .order__id,
-    .inventory,
-    .product__add,
-    .product__size,
-    .service,
-    .cod,
-    .product__price--total {
-        position: relative;
-    }
-    .product__add {
-        .product__add--quantity {
-            img {
-                height: 17px;
-                width: 17px;
-                &:hover {
-                    transform: scale(1.1);
-                    cursor: pointer;
+.delivery {
+    .main {
+        background: #fff;
+        padding: 20px 12px 0;
+        .order__id,
+        .inventory,
+        .product__add,
+        .product__size,
+        .service,
+        .cod,
+        .product__price--total {
+            position: relative;
+        }
+        .product__add {
+            .product__add--quantity {
+                img {
+                    height: 17px;
+                    width: 17px;
+                    &:hover {
+                        transform: scale(1.1);
+                        cursor: pointer;
+                    }
                 }
             }
-            div {
-                font-size: 1.1rem;
-                margin: 0 5px;
+            .product__add--btn-add {
+                background: #fff;
+                box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+                color: black;
+                margin-bottom: 1rem;
+                img {
+                    height: 17px;
+                    width: 17px;
+                }
             }
         }
-        .product__add--btn-add {
-            background: #fff;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
-            color: black;
-            margin-bottom: 1rem;
-            img {
-                height: 17px;
-                width: 17px;
+        .product-list {
+            max-height: 177px;
+            overflow: scroll;
+            .product-name {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+                padding-right: 15px;
             }
         }
     }
+    .delivery__btn--create {
+        padding: 0 20px;
+        width: 100%;
+    }
 }
-.order__id{
-    p{
+
+.order__id {
+    p {
         cursor: help;
     }
 }
@@ -73,15 +69,10 @@ body > div {
     }
 }
 .fee__total {
-    padding: 0 1rem;
-}
-.fee__total .option img {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-}
-.fee__total .option p {
-    cursor: pointer;
+    padding: 0 20px;
+    .option p {
+        cursor: pointer;
+    }
 }
 .fee__total .option + .form-group {
     height: 0;
@@ -96,49 +87,10 @@ body > div {
     height: initial;
     opacity: 1;
 }
-.delivery {
-    input,
-    select {
-        margin-bottom: 1rem;
-    }
-}
 textarea {
-    height: 3rem;
+    height: 50px;
 }
 
-.product__list {
-    background: #eaeaea;
-    padding: 5px;
-    border-radius: 1rem;
-    max-height: 150px;
-    line-height: 2rem;
-    overflow-y: scroll;
-    margin: 5px 0 10px 0;
-    &::-webkit-scrollbar {
-        /* Chrome, Safari and Opera*/
-        display: none;
-    }
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-    .product__item {
-        background: white;
-        border-radius: 10px;
-        padding: 5px;
-        margin: 5px 0;
-        word-break: break-word;
-        &:hover {
-            img {
-                display: block;
-                cursor: pointer;
-            }
-        }
-    }
-    img {
-        display: none;
-        height: 1.5rem;
-        width: 1.5rem;
-    }
-}
 .modal {
     position: fixed;
     top: 0;
@@ -178,7 +130,4 @@ textarea {
             height: 3rem;
         }
     }
-}
-.order__address {
-    margin-bottom: 1rem;
 }

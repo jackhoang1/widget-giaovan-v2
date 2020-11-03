@@ -1,21 +1,43 @@
 <div :class="[ 'order-info', { 'show-order-info': is_show_order_info }]">
-    <div class="text-center">
-        <button class="close" @click="handleHideOrderInfo">
+    <div>
+        <button class="close close__btn--order" @click="handleHideOrderInfo">
             <img src="@/assets/close1.png" />
         </button>
-        <p>Địa chỉ lấy hàng: {{order_info.inventory.address}}</p>
-        <p class="mt-2 mb-3 font-weight-bold">Thông tin giao hàng</p>
-        <p class="">Khách hàng: {{order_info.receiver_name}}</p>
-        <p class="">Số điện thoại: {{order_info.receiver_phone}}</p>
-        <p class="">Địa chỉ: {{order_info.receiver_address}}</p>
-        <p class="">Hàng hoá: {{list_product_name}}</p>
-        <p class="text-primary">
-            <span>{{order_info.order_payment.name}}</span>
-            <span> - Chưa tính tiền thu hộ</span>
-        </p>
-        <p class="font-weight-bold" style="font-size:16">Tổng phí giao hàng: {{order_info.shipping_fee | toCurrency}}
-        </p>
-        <button @click="createDelivery()" class="btn-pill mt-3 mb-4 w-100">Xác nhận
-            đơn</button>
+        <p class="text__second--large info-title">Thông tin đơn hàng</p>
+        <div class="info-content">
+            <div class="row text__left">
+                <p class="text__neutral70--medium col-4">Lấy hàng</p>
+                <p class="col-8">{{order_info.inventory.address}}</p>
+            </div>
+            <div class="row text__left ">
+                <p class="text__neutral70--medium col-4">Khách hàng:</p>
+                <p class="col-8">{{order_info.receiver_name}}</p>
+            </div>
+            <div class="row text__left">
+                <p class="text__neutral70--medium col-4">Số điện thoại:</p>
+                <p class="col-8">{{order_info.receiver_phone}}</p>
+            </div>
+            <div class="row text__left">
+                <p class="text__neutral70--medium col-4">Gửi hàng:</p>
+                <p class="col-8">{{order_info.receiver_address}}</p>
+            </div>
+            <div class="row text__left">
+                <p class="text__neutral70--medium col-4">DS hàng hoá:</p>
+                <p class="col-8">{{list_product_name}}</p>
+            </div>
+            <div class="text-primary">
+                {{order_info.order_payment.name}}
+            </div>
+            <div class="text-primary">
+                Chưa tính tiền thu hộ
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between align-items-center">
+                <p class="text__second--medium font__weight-600">Tổng phí giao vận</p>
+                <p class="info-order-price">{{order_info.shipping_fee | toCurrency}}</p>
+            </div>
+            <button @click="createDelivery()" class="btn-pill mt-3 mb-4 w-100">Xác nhận</button>
+        </div>
+
     </div>
 </div>

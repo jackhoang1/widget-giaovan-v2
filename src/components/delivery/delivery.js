@@ -365,7 +365,7 @@ export default {
         },
         handleAddProduct() {
             if (!this.product.name.trim()) {
-                return this.swalToast('Bạn chưa nhập tên sản phẩm', 'warning')
+                return this.swalToast('Bạn chưa nhập tên hàng hoá', 'warning')
             }
             if (this.delivery_platform == 'GHTK' && this.product.weight <= 0) {
                 return this.swalToast('Bạn chưa nhập khối lượng lượng sản phẩm (gram)', 'warning')

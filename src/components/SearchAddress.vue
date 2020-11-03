@@ -189,13 +189,12 @@ export default {
 
 <style lang="scss" scoped>
 @mixin imageSelect {
-  background: url("data:image/svg+xml;utf8,<svg fill='black' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>")
-    no-repeat right #eee !important;
+  background: url(../assets/arrow.svg)
+    no-repeat right #fff !important;
   background-size: 20px;
 }
-$colorHover: #007bff;
+$colorHover: #dfe1e4;
 * {
-  font-size: 0.9rem;
   box-sizing: border-box;
 }
 ::-webkit-scrollbar {
@@ -253,7 +252,6 @@ $colorHover: #007bff;
       cursor: pointer;
       &:hover {
         background-color: $colorHover;
-        color: white;
         transform: scale(1.05);
         -webkit-transform: scale(1.05);
         transition: transform 0.15s, background 0.15s;
