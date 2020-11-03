@@ -1,14 +1,17 @@
+import EventBus from "@/EventBus.js";
 import Restful from "@/services/resful.js"
 import SearchAddress from "@/components/SearchAddress.vue"
 import InfoOrder from "@/components/infoOrder/InfoOrder.vue"
+import Login from "@/components/login/Login.vue"
+
 // const APICMS = "https://ext.botup.io" //product
 // const APICMS = "http://localhost:1337" //dev
 const APICMS = "https://devbbh.tk"; //dev
 
 
 export default {
-    components: { SearchAddress, InfoOrder },
-    props: ['store_token', 'payload'],
+    components: { SearchAddress, InfoOrder, Login },
+    props: ['store_token', 'payload', 'showLogin', 'hideLogin'],
     data() {
         return {
             delivery_platform: "",
@@ -111,11 +114,20 @@ export default {
             is_show_note: false,
             is_show_order_info: false,
             is_loading: false,
-            switch_order_id: true
+            switch_order_id: true,
+            showSetting: false,
+            showSettingContent: true,
         };
     },
     async created() {
+        console.log('create delivery run');
         this.readSwitchLocal
+        EventBus.$on("show-modal-setting", () => {
+            this.showFormLogin()
+        });
+        EventBus.$on("hide-modal-setting", () => {
+            this.hideFormLogin()
+        });
     },
     async mounted() {
         await this.getInventory()
@@ -814,6 +826,24 @@ export default {
         handleShowNote() {
             this.is_show_note = !this.is_show_note
         },
+        handleModalSetting() {
+            this.showSetting = !this.showSetting
+        },
+        showModalSettingContent() {
+            this.showSettingContent = true
+        },
+        hideModalSettingContent() {
+            this.showSettingContent = false
+        },
+        showFormLogin() {
+            console.log('close run');
+            this.showLogin()
+            this.hideModalSettingContent()
+        },
+        hideFormLogin() {
+            this.hideLogin()
+            this.showModalSettingContent()
+        },
         handleShowOrderInfo() {
             let check = this.validateCreateDelivery()
             if (check == 'failed') return
@@ -946,5 +976,13 @@ export default {
             });
             return formatter.format(value)
         },
+    },
+    beforeDestroy() {
+        EventBus.$off("show-modal-setting", () => {
+            this.showFormLogin()
+        });
+        EventBus.$off("hide-modal-setting", () => {
+            this.hideFormLogin()
+        });
     }
 };

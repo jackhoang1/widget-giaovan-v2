@@ -1,55 +1,31 @@
 <template>
   <div class>
     <!-- Xác thực App -->
-    <div v-if="!is_oauth" class="auth">
-      <div class="auth__activate" v-if="!show_list_store">
-        <div class="sign d-flex flex-column align-items-center">
-          <p class="text-dark mb-4">Đăng Nhập CMS</p>
-          <input
-            v-model="cms_account"
-            type="text"
-            class="form-control mb-3"
-            placeholder="Email"
-          />
-          <input
-            v-model="cms_password"
-            type="password"
-            class="form-control mb-3"
-            placeholder="Password"
-          />
-          <button class="btn btn-primary text-light" v-on:click="runSignIn()">
-            Sign In
-          </button>
-        </div>
-      </div>
-      <div :class="['select-store', 'mb-5', { 'show-store': show_list_store }]">
-        <div class="list__store" v-if="show_list_store">
-          <p class="text-center mb-4">Danh sách Store</p>
-          <div
-            v-for="(item, ind) in list_store"
-            class="store"
-            @click="handleChooseStore(item)"
-            :key="ind"
-          >
-            {{ item.store_name }}
-          </div>
-        </div>
-      </div>
-      <div v-if="overlaySign" class="overlay"></div>
-    </div>
-    <!--End Xác thực App -->
 
-    <div v-if="is_oauth && !is_warning" class="widget">
-      <Delivery :store_token="store_token" :payload="payload" />
-    </div>
-    <!-- warning -->
-    <div v-if="is_oauth && is_warning" class="auth__warning">
-      <div class="auth__activate">
-        <div class="text-center">
-          <img src="@/assets/error.png" alt />
-        </div>
-        <p class="mb-0">Xin vui lòng kích hoạt lại ứng dụng</p>
-      </div>
+    <!--End Xác thực App -->
+    <!-- xác thực app  -->
+    <Login
+      v-if="isLogin || (!is_oauth && !overlaySign)"
+      :isLogin="isLogin"
+      :showLogin="showLogin"
+      :hideLogin="hideLogin"
+      :access_token="access_token"
+      :forceRerender="forceRerender"
+      :key="componentKey"
+      @store-token="store_token = $event"
+      @store-email="payload.store_email = $event"
+    >
+    </Login>
+    <div v-if="overlaySign" class="overlay"></div>
+    <!-- component giao vận -->
+    <div v-if="is_oauth" class="widget">
+      <Delivery
+        :store_token="store_token"
+        :payload="payload"
+        :showLogin="showLogin"
+        :hideLogin="hideLogin"
+        :key="componentKey"
+      />
     </div>
   </div>
 </template>
@@ -57,6 +33,7 @@
 <script>
 import Restful from "@/services/resful.js";
 import Delivery from "@/components/delivery/Delivery.vue";
+import Login from "@/components/login/Login.vue";
 import { APICMS, ApiBase, secretKey } from "@/services/domain.js";
 
 let urlString = location.href;
@@ -91,9 +68,12 @@ const Toast2 = Swal.mixin({
 export default {
   components: {
     Delivery,
+    Login,
   },
   data() {
     return {
+      componentKey: 0,
+      isLogin: false,
       is_oauth: false,
       is_warning: false,
       secretKey: secretKey,
@@ -122,6 +102,10 @@ export default {
     await this.partnerAuth();
   },
   methods: {
+    forceRerender() {
+      this.componentKey += 1;
+      this.isLogin = false;
+    },
     async partnerAuth() {
       try {
         let body = {
@@ -183,128 +167,17 @@ export default {
         console.log("info err", error);
       }
     },
-    async runSignIn() {
-      try {
-        // Call Api Đăng nhập CMS
-        let path = "https://api.botup.io/v1/auth/sign-in";
-        let body = {
-          email: this.cms_account,
-          password: this.cms_password,
-        };
-
-        let sign_in = await Restful.post(path, body);
-
-        let user = {};
-        if (sign_in.data && sign_in.data.data && sign_in.data.data.user) {
-          user = sign_in.data.data.user;
-        } else {
-          throw "Đăng nhập thất bại";
-        }
-        let { email, first_name, last_name, id, role } = user;
-        path = `${APICMS}/v1/users/users/singinbotup`;
-        body = {
-          username: id,
-          email,
-          first_name,
-          last_name,
-          role,
-        };
-
-        // Call Api Đăng nhập Botup
-        let cms_signin = await Restful.post(path, body);
-
-        // Lấy danh sách Store
-        path = `${APICMS}/v1/selling-page/store/store_read`;
-        let params = {};
-        if (
-          cms_signin.data &&
-          cms_signin.data.data &&
-          cms_signin.data.data.user &&
-          cms_signin.data.data.user.id
-        ) {
-          params = {
-            owner_id: cms_signin.data.data.user.id,
-          };
-        } else {
-          throw "Đăng nhập thất bại";
-        }
-
-        let read_store = await Restful.get(path, params);
-
-        if (read_store.data && read_store.data.data) {
-          this.list_store = read_store.data.data;
-          this.show_list_store = true;
-        } else {
-          throw "Lỗi khi lấy danh sách Store";
-        }
-      } catch (e) {
-        console.log("error", e);
-        if (e.data.message) {
-          Toast2.fire({
-            icon: "error",
-            title: e.data.message,
-          });
-          return;
-        }
-        Toast2.fire({
-          icon: "error",
-          title: e,
-        });
-      }
+    showLogin() {
+      console.log("isLogin");
+      this.isLogin = true;
+    },
+    hideLogin() {
+      this.isLogin = false;
     },
     handleLocalStorage() {
       let data = JSON.parse(localStorage.getItem("widget_delivery"));
       if (data && data.store_email) {
         this.payload.store_email = data.store_email;
-      }
-    },
-    handleChooseStore(item) {
-      this.store_token = item.access_token;
-      localStorage.removeItem("widget_delivery");
-      let data = {};
-      if (item.store_email) {
-        this.payload.store_email = item.store_email;
-        data["store_email"] = item.store_email;
-      }
-      localStorage.setItem("widget_delivery", JSON.stringify(data));
-      this.runOAuth();
-    },
-    async runOAuth() {
-      try {
-        // Call Api xác thực khi chọn Store và lưu lại Token
-        let body = {
-          _type: "oauth-access-token",
-          access_token: this.access_token,
-          token_partner: this.store_token,
-        };
-        // Xác thực Widget
-        let oauth = await Restful.post(
-          `${ApiBase}/v1/app/app-installed/update`,
-          body
-        );
-        Toast2.fire({
-          icon: "success",
-          title: "Xác thực thành công",
-        });
-        setTimeout(() => {
-          window.close();
-        }, 1000);
-      } catch (e) {
-        console.log(e);
-        if (
-          e.data &&
-          e.data.message &&
-          e.data.message.message == "jwt expired"
-        ) {
-          return Toast2.fire({
-            icon: "error",
-            title: "Vui lòng tải lại trang và kích hoạt lại!",
-          });
-        }
-        Toast2.fire({
-          icon: "error",
-          title: "Xác thực không thành công",
-        });
       }
     },
   },
@@ -356,8 +229,7 @@ $colorNeutral5: #f6f7f8;
 }
 
 @mixin imageSelect {
-  background: url(./assets/arrow.svg)
-    no-repeat right #fff !important;
+  background: url(./assets/arrow.svg) no-repeat right #fff !important;
   background-size: 20px;
   appearance: none;
 }
@@ -398,7 +270,7 @@ body {
   .auth__activate {
     position: relative;
     background: #ededed;
-    border-radius: 1rem;
+    border-radius: 4px;
     margin-top: 5%;
     padding: 5% 10%;
     -webkit-box-shadow: 0 0px 10px rgba(0, 0, 0, 0.4);
@@ -406,30 +278,10 @@ body {
   }
   .sign {
     width: 100%;
-
     input {
       width: 100%;
       height: 35px;
       //   background: #eeeeee;
-    }
-
-    button {
-      font-weight: bold;
-      box-shadow: 0 5px 15px 0 #007bff30;
-      transition: all 0.5s;
-      border-radius: 25px;
-      padding: 0.5rem 3.5rem;
-      margin-top: 1.5rem;
-
-      &:hover {
-        background: #007bff;
-        box-shadow: 0 5px 20px 0 #007bff30;
-      }
-
-      &:focus {
-        box-shadow: 0 5px 20px 0 #007bff30 !important;
-        background: #007bff !important;
-      }
     }
   }
 
@@ -443,24 +295,22 @@ body {
       padding: 1rem;
       border-radius: 1rem;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+      background: #fff;
     }
 
     .store {
       cursor: pointer;
-      text-align: center;
       padding: 0.5rem 1rem;
       margin: 0.5rem 0;
       color: rgb(24, 24, 24);
-      border-radius: 1rem;
-      font-weight: bold;
-      background: #ededed;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      background: $colorNeutral5;
+      //   box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
       transition: transform 0.2s ease-out, background 0.7s ease-out;
 
       &:hover {
         transform: scale(1.03);
-        background: #ed5a29;
-        color: #fff;
+        background: $colorNeutral5;
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
       }
 
@@ -840,6 +690,30 @@ select {
 .hover-scale {
   &:hover {
     transform: scale(1.1);
+  }
+}
+.close {
+  position: absolute;
+  background: $colorNeutral38;
+  top: -10px;
+  right: -7px;
+  opacity: 1;
+  border-radius: 50%;
+  padding: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &:hover {
+    cursor: pointer;
+    opacity: 1 !important;
+    transform: scale(1.1);
+  }
+  &:focus {
+    outline: none;
+  }
+  img {
+    width: 6px;
+    height: 6px;
   }
 }
 </style>
