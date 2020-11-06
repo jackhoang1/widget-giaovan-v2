@@ -29,7 +29,7 @@ const Toast2 = Swal.mixin({
 
 
 export default {
-    props: ['isLogin','showLogin','hideLogin', 'access_token', 'forceRerender'],
+    props: ['isLogin', 'showLogin', 'hideLogin', 'access_token', 'forceRerender'],
     data() {
         return {
             cms_account: "",
@@ -49,73 +49,77 @@ export default {
         handleChooseStore(item) {
             this.store_token = item.access_token;
             this.$emit('store-token', item.access_token)
-            localStorage.removeItem("widget_delivery");
-            let data = {};
+            localStorage.removeItem("widget_delivery")
+            let data = {}
             if (item.store_email) {
                 // this.payload.store_email = item.store_email;
                 this.$emit('store-email', item.store_email)
-                data["store_email"] = item.store_email;
+                data["store_email"] = item.store_email
             }
-            localStorage.setItem("widget_delivery", JSON.stringify(data));
-            this.runOAuth();
+            localStorage.setItem("widget_delivery", JSON.stringify(data))
+            this.runOAuth()
         },
         async runSignIn() {
             try {
                 // Call Api Đăng nhập CMS
-                let path = "https://api.botup.io/v1/auth/sign-in";
+                let path = "https://api.botup.io/v1/auth/sign-in"
                 let body = {
                     email: this.cms_account,
                     password: this.cms_password,
                 };
 
-                let sign_in = await Restful.post(path, body);
+                let sign_in = await Restful.post(path, body)
 
                 let user = {};
-                if (sign_in.data && sign_in.data.data && sign_in.data.data.user) {
-                    user = sign_in.data.data.user;
+                if (
+                    sign_in &&
+                    sign_in.data &&
+                    sign_in.data.data &&
+                    sign_in.data.data.user
+                ) {
+                    user = sign_in.data.data.user
                 } else {
-                    throw "Đăng nhập thất bại";
+                    throw "Đăng nhập thất bại"
                 }
-                let { email, first_name, last_name, id, role } = user;
-                path = `${APICMS}/v1/users/users/singinbotup`;
+                let { email, first_name, last_name, id, role } = user
+                path = `${APICMS}/v1/users/users/singinbotup`
                 body = {
                     username: id,
                     email,
                     first_name,
                     last_name,
                     role,
-                };
+                }
 
                 // Call Api Đăng nhập Botup
-                let cms_signin = await Restful.post(path, body);
+                let cms_signin = await Restful.post(path, body)
 
                 // Lấy danh sách Store
-                path = `${APICMS}/v1/selling-page/store/store_read`;
-                let params = {};
+                path = `${APICMS}/v1/selling-page/store/store_read`
+                let params = {}
                 if (
+                    cms_signin &&
                     cms_signin.data &&
                     cms_signin.data.data &&
                     cms_signin.data.data.user &&
                     cms_signin.data.data.user.id
                 ) {
-                    params = {
-                        owner_id: cms_signin.data.data.user.id,
-                    };
+                    params = { owner_id: cms_signin.data.data.user.id }
                 } else {
-                    throw "Đăng nhập thất bại";
+                    throw "Đăng nhập thất bại"
                 }
 
-                let read_store = await Restful.get(path, params);
+                let read_store = await Restful.get(path, params)
 
                 if (read_store && read_store.data && read_store.data.data) {
-                    this.list_store = read_store.data.data;
-                    this.show_list_store = true;
+                    this.list_store = read_store.data.data
+                    this.show_list_store = true
                 } else {
-                    throw "Lỗi khi lấy danh sách Store";
+                    throw "Lỗi khi lấy danh sách Store"
                 }
             } catch (e) {
-                console.log("error", e);
-                if (e.data.message) {
+                console.log("error", e)
+                if (e && e.data && e.data.message) {
                     Toast2.fire({
                         icon: "error",
                         title: e.data.message,
@@ -153,6 +157,7 @@ export default {
             } catch (e) {
                 console.log(e);
                 if (
+                    e &&
                     e.data &&
                     e.data.message &&
                     e.data.message.message == "jwt expired"

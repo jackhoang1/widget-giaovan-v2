@@ -9,7 +9,7 @@
       v-model="result"
       @keydown.down="onArrowDown"
       @keydown.up="onArrowUp"
-      @keydown.enter="onEnter"
+      @keydown.enter="handleClickInput"
       @click="handleClickInput"
       @change="onChange()"
     />
@@ -21,7 +21,6 @@
           type="text"
           autocomplete="off"
           v-model="search"
-          @keydown.enter="onEnter"
           @input="onChange"
           @change="onChange()"
         />
@@ -73,10 +72,7 @@ export default {
 
   methods: {
     onChange() {
-      console.log("list_data_input", this.list_data_input);
       if (!this.list_data_input) return;
-      console.log("emit", this.data_output);
-      // Let's warn the parent that a change was made
       this.$emit("data_output", this.data_output);
       if (this.changeInput) {
         this.changeInput();
@@ -189,8 +185,7 @@ export default {
 
 <style lang="scss" scoped>
 @mixin imageSelect {
-  background: url(../assets/arrow.svg)
-    no-repeat right #fff !important;
+  background: url(../assets/arrow.svg) no-repeat right #fff !important;
   background-size: 20px;
 }
 $colorHover: #dfe1e4;

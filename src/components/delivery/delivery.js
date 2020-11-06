@@ -183,7 +183,11 @@ export default {
 
                 let get_list_district = await Restful.get(path, params, headers)
 
-                if (get_list_district.data && get_list_district.data.data) {
+                if (
+                    get_list_district &&
+                    get_list_district.data &&
+                    get_list_district.data.data
+                ) {
                     this.list_district_receiver = get_list_district.data.data
                 }
             } catch (e) {
@@ -198,7 +202,11 @@ export default {
 
                 let get_list_ward = await Restful.get(path, params, headers)
 
-                if (get_list_ward.data && get_list_ward.data.data) {
+                if (
+                    get_list_ward &&
+                    get_list_ward.data &&
+                    get_list_ward.data.data
+                ) {
                     this.list_ward_receiver = get_list_ward.data.data
                 }
             } catch (e) {
@@ -215,19 +223,21 @@ export default {
         async getInventory() {
             try {
                 let path = `${APICMS}/v1/selling-page/delivery/delivery_inventory`
-                let headers = {
-                    Authorization: this.store_token
-                }
+                let headers = { Authorization: this.store_token }
 
                 let get_inventory = await Restful.get(path, null, headers)
 
                 if (
+                    get_inventory &&
                     get_inventory.data &&
                     get_inventory.data.data
                 ) {
                     this.delivery_platform = get_inventory.data.data.platform_type
-                    let list_inventories = get_inventory.data.data.inventory || get_inventory.data.data.shops || get_inventory.data.data.data
-                    if (list_inventories && list_inventories.length > 0) {
+                    let list_inventories =
+                        get_inventory.data.data.inventory ||
+                        get_inventory.data.data.shops ||
+                        get_inventory.data.data.data
+                    if (list_inventories && list_inventories.length) {
                         this.list_inventories = list_inventories
                         this.order_info.inventory = this.list_inventories[0] // mặc định kho hàng đầu tiên
                     }
@@ -241,7 +251,8 @@ export default {
             try {
                 let body = {}
                 if (this.delivery_platform == 'VIETTEL_POST') {
-                    if (!this.order_info.inventory.provinceId ||
+                    if (
+                        !this.order_info.inventory.provinceId ||
                         !this.order_info.inventory.districtId ||
                         !this.order_info.receiver_province ||
                         !this.order_info.receiver_district ||
@@ -250,7 +261,8 @@ export default {
                         !this.order_info.length ||
                         !this.order_info.width ||
                         !this.order_info.height ||
-                        !this.product_price_num) return
+                        !this.product_price_num
+                    ) return
                     body = {
                         "sender_province": this.order_info.inventory.provinceId,
                         "sender_district": this.order_info.inventory.districtId,
@@ -265,8 +277,10 @@ export default {
                     }
                 }
                 if (this.delivery_platform == 'GHN') {
-                    if (!this.order_info.inventory.district_id ||
-                        !this.order_info.receiver_district) return
+                    if (
+                        !this.order_info.inventory.district_id ||
+                        !this.order_info.receiver_district
+                    ) return
                     body = {
                         "shop_id": this.order_info.inventory._id,
                         "from_district": this.order_info.inventory.district_id,
@@ -275,13 +289,12 @@ export default {
                 }
                 if (this.delivery_platform == 'GHTK') { return }
                 let path = `${APICMS}/v1/selling-page/delivery/delivery_get_service`
-                let headers = {
-                    Authorization: this.store_token
-                }
+                let headers = { Authorization: this.store_token }
 
                 let get_pricing_services = await Restful.post(path, body, null, headers)
 
                 if (
+                    get_pricing_services &&
                     get_pricing_services.data &&
                     get_pricing_services.data.data &&
                     get_pricing_services.data.code == 200
@@ -290,7 +303,8 @@ export default {
                     this.order_info.order_service = ""
                     this.order_info.shipping_fee = 0
                     this.pricing_services_list = services
-                    if (services && services.length > 0) {
+
+                    if (services && services.length) {
                         this.order_info.order_service = services[0]   //default dịch vụ 1
                     }
                 }
@@ -303,7 +317,8 @@ export default {
                 if (this.delivery_platform == "VIETTEL_POST") return
                 let body = {}
                 if (this.delivery_platform == "GHN") {
-                    if (!this.order_info.inventory ||
+                    if (
+                        !this.order_info.inventory ||
                         !this.order_info.order_service ||
                         !this.order_info.receiver_district ||
                         !this.order_info.receiver_ward ||
@@ -325,18 +340,18 @@ export default {
                     }
                 }
                 if (this.delivery_platform == "GHTK") {
-                    if (!this.order_info.receiver_street
-                        || !this.order_info.receiver_district
-                        || !this.order_info.receiver_province
-                        || this.list_product.length == 0
-                        || !this.product_price_num
-                        || !this.order_info.other_info.transport
+                    if (
+                        !this.order_info.receiver_street ||
+                        !this.order_info.receiver_district ||
+                        !this.order_info.receiver_province ||
+                        this.list_product.length === 0 ||
+                        !this.product_price_num ||
+                        !this.order_info.other_info.transport
                     ) return
                     this.order_info.receiver_address = `${this.order_info.receiver_street}, ${this.order_info.receiver_ward.name}, ${this.order_info.receiver_district.name}, ${this.order_info.receiver_province.name}`
                     this.list_product.forEach(product => {
                         this.order_info.weight += product.weight
-                        console.log('111111111111111111', this.order_info.weight, product.weight);
-                    });
+                    })
 
                     body = {
                         "receiver_province": this.order_info.receiver_province.name,
@@ -353,6 +368,7 @@ export default {
                 let get_shipping_fee = await Restful.post(path, body, null, headers)
 
                 if (
+                    get_shipping_fee &&
                     get_shipping_fee.data &&
                     get_shipping_fee.data.data &&
                     get_shipping_fee.data.data.data
@@ -365,6 +381,7 @@ export default {
             } catch (e) {
                 console.log(e);
                 if (
+                    e &&
                     e.data &&
                     e.data.error_message &&
                     e.data.error_message.code_message_value
@@ -379,7 +396,7 @@ export default {
             if (!this.product.name.trim()) {
                 return this.swalToast('Bạn chưa nhập tên hàng hoá', 'warning')
             }
-            if (this.delivery_platform == 'GHTK' && this.product.weight <= 0) {
+            if (this.delivery_platform === 'GHTK' && this.product.weight <= 0) {
                 return this.swalToast('Bạn chưa nhập khối lượng lượng sản phẩm (gram)', 'warning')
             }
             if (this.product.quantity <= 0) {
@@ -446,7 +463,10 @@ export default {
             if (this.delivery_platform == "VIETTEL_POST") {
                 this.getPricingServices()
             }
-            if (this.delivery_platform == "GHN" || this.delivery_platform == "GHTK") {
+            if (
+                this.delivery_platform == "GHN" ||
+                this.delivery_platform == "GHTK"
+            ) {
                 this.getShippingFee()
             }
         },
@@ -657,7 +677,6 @@ export default {
             }
         },
         validateCreateDelivery() {
-            console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaa');
             this.changeClassValidate()
             if (
                 !this.order_info.inventory ||
@@ -672,8 +691,7 @@ export default {
                 !this.order_info.order_payment ||
                 !this.order_info.weight
             ) { return false }
-            console.log('bbbbbbbbbbbbbbbb');
-            if (this.list_product.length == 0) {
+            if (this.list_product.length === 0) {
                 this.swalToast('Hãy thêm hàng hoá giao vận', 'warning')
                 return 'failed'
             }
@@ -720,26 +738,30 @@ export default {
                 let path = `${APICMS}/v1/selling-page/delivery/delivery_create`
                 let headers = { Authorization: this.store_token }
                 let info_delivery = this.infoDelivery()
-                let body = {
-                    ...info_delivery
-                }
-                console.log("body create delivery", body)
+                let body = { ...info_delivery }
 
                 let create_order = await Restful.post(path, body, {}, headers)
 
                 if (
+                    create_order &&
                     create_order.data &&
                     create_order.data.data &&
                     create_order.data.data.snap_order
                 ) {
-                    if ((create_order.data.data.snap_order.data && create_order.data.data.snap_order.data.fee) || create_order.data.data.snap_order.data || create_order.data.data.snap_order.success) {
+                    let snap_order = create_order.data.data.snap_order
+                    if (
+                        (snap_order.data && snap_order.data.fee) ||
+                        snap_order.data ||
+                        snap_order.success
+                    ) {
                         let delivery_id = ''
-                        let time = create_order.data.data.updatedAt
                         if (this.delivery_platform == "GHTK") {
-                            delivery_id = create_order.data.data.snap_order.order.label
+                            delivery_id = snap_order.order.label
                         }
                         else {
-                            delivery_id = create_order.data.data.snap_order.data.order_code || create_order.data.data.snap_order.data.ORDER_NUMBER         //GHN || VTP 
+                            delivery_id =
+                                snap_order.data.order_code ||
+                                snap_order.data.ORDER_NUMBER      //GHN || VTP 
                         }
                         this.sendMessage(delivery_id)
                         this.swalToast("Tạo đơn giao vận thành công", "success")
@@ -747,10 +769,10 @@ export default {
                         this.list_product = []
                     }
                     if (
-                        !create_order.data.data.snap_order.success &&
+                        !snap_order.success &&
                         this.delivery_platform == "GHTK"
                     ) {
-                        this.swalToast(create_order.data.data.snap_order.message, "error", 4000)
+                        this.swalToast(snap_order.message, "error", 4000)
                     }
                 }
                 this.is_loading = false
@@ -758,13 +780,15 @@ export default {
                 console.log("e", e)
                 this.is_loading = false
                 if (
+                    e &&
                     e.data &&
                     e.data.error_message
                 ) {
-                    if (e.data.error_message.code_message_value) {
-                        return this.swalToast(e.data.error_message.code_message_value, 'error') //GHN
+                    let e_msg = e.data.error_message
+                    if (e_msg.code_message_value) {
+                        return this.swalToast(e_msg.code_message_value, 'error') //GHN
                     }
-                    this.swalToast(e.data.error_message, 'error')   //VTP
+                    this.swalToast(e_msg, 'error')   //VTP
                 }
 
             }

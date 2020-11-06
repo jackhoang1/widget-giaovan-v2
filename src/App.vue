@@ -160,15 +160,14 @@ export default {
           }
           this.handleLocalStorage();
         }
-      } catch (error) {
+      } catch (e) {
         // Chạy vào SignIn
         this.overlaySign = false;
         this.is_oauth = false;
-        console.log("info err", error);
+        console.log("info err", e);
       }
     },
     showLogin() {
-      console.log("isLogin");
       this.isLogin = true;
     },
     hideLogin() {
@@ -263,7 +262,7 @@ body {
 .auth {
   position: absolute;
   padding: 1rem 10%;
-  top: 12%;
+  top: 20%;
   width: 100%;
   z-index: 999;
 
@@ -292,8 +291,8 @@ body {
     transition: all 0.4s ease-out 0.2s;
 
     .list__store {
-      padding: 1rem;
-      border-radius: 1rem;
+      padding: 12px;
+      border-radius: 8px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
       background: #fff;
     }
@@ -715,5 +714,52 @@ select {
     width: 6px;
     height: 6px;
   }
+}
+input[type="radio"] {
+  display: none;
+}
+
+input[type="radio"] + label {
+  // color:#f2f2f2;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
+input[type="radio"] + label span {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin: -1px 12px 0 0;
+  vertical-align: middle;
+  background: url(./assets/radio.svg) no-repeat;
+  cursor: pointer;
+}
+
+input[type="radio"]:checked + label span {
+  background: url(./assets/radio_checked.svg) no-repeat;
+}
+
+input[type="checkbox"] {
+  display: none;
+}
+
+input[type="checkbox"] + label {
+  // color:#f2f2f2;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
+input[type="checkbox"] + label span {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin: 1px 8px 0 0;
+  vertical-align: middle;
+  background: url(./assets/checkbox.svg) no-repeat;
+  cursor: pointer;
+}
+
+input[type="checkbox"]:checked + label span {
+  background: url(./assets/checkbox_checked.svg) no-repeat;
 }
 </style>

@@ -63,10 +63,10 @@
                 <div class="col">
                     <input class="form-control-sm" :class="{'validate-failed':validate_failed.sender_email}" type="text"
                         placeholder="Email bên gửi..." v-model="order_info.sender_email" @change="handleSaveInfo">
-                    <div class="d-flex justify-content-end align-items-center">
+                    <div class="margin__top--7 d-flex justify-content-end align-items-center">
                         <input class="m-0 mr-2" id="checkbox__save--email" type="checkbox" v-model="option_save_info"
                             @change="handleSaveInfo">
-                        <label for="checkbox__save--email">Lưu email</label>
+                        <label class="cursor__pointer" for="checkbox__save--email"><span></span>Lưu email</label>
                     </div>
                 </div>
             </div>
