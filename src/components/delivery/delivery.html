@@ -113,7 +113,7 @@
             </div>
         </div>
         <input v-model="order_info.receiver_street" type="text" class="margin__bottom--12 form-control-sm"
-            :class="{'validate-failed':validate_failed.receiver_street}" placeholder="Địa chỉ cụ thể" />
+            :class="{'validate-failed':validate_failed.receiver_street}" placeholder="Địa chỉ cụ thể" @keyup="handleAddressTimeout"/>
         <!-- ---------------------------------- -->
         <!-- Thêm hàng hoá -->
         <div class="product__add">

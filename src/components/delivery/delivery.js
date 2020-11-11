@@ -3,11 +3,7 @@ import Restful from "@/services/resful.js"
 import SearchAddress from "@/components/SearchAddress.vue"
 import InfoOrder from "@/components/infoOrder/InfoOrder.vue"
 import Login from "@/components/login/Login.vue"
-
-// const APICMS = "https://ext.botup.io" //product
-// const APICMS = "http://localhost:1337" //dev
-const APICMS = "https://devbbh.tk"; //dev
-
+import { APICMS, ApiBase, secretKey } from "@/services/domain.js";
 
 export default {
     components: { SearchAddress, InfoOrder, Login },
@@ -349,16 +345,17 @@ export default {
                         !this.order_info.other_info.transport
                     ) return
                     this.order_info.receiver_address = `${this.order_info.receiver_street}, ${this.order_info.receiver_ward.name}, ${this.order_info.receiver_district.name}, ${this.order_info.receiver_province.name}`
+                    this.order_info.weight = 0
                     this.list_product.forEach(product => {
                         this.order_info.weight += product.weight
                     })
-
+                    console.log('weight', this.order_info.weight);
                     body = {
                         "receiver_province": this.order_info.receiver_province.name,
                         "receiver_district": this.order_info.receiver_district.name,
                         "receiver_address": this.order_info.receiver_address,
                         "weight": this.order_info.weight,  // khối lượng tính theo kg
-                        "value": this.product_price_num,
+                        "value": Number(this.product_price_num),
                         "transport": this.order_info.other_info.transport
                     }
                 }
@@ -517,6 +514,16 @@ export default {
                 this.handleChangePrice()
             }, 1000);
         },
+        handleAddressTimeout() {
+            if (this.delivery_platform !== 'GHTK') return
+            if (this.timer) {
+                clearTimeout(this.timer);
+                this.timer = null;
+            }
+            this.timer = setTimeout(() => {
+                this.getShippingFee()
+            }, 1000);
+        },
         handleAddress() {
             if (this.delivery_platform == 'VIETTEL_POST') {
                 this.order_info.receiver_address = `${this.order_info.receiver_street}, ${this.order_info.receiver_ward.name}, ${this.order_info.receiver_district.name}, ${this.order_info.receiver_province.name}`
@@ -603,7 +610,7 @@ export default {
                     "receiver_district": this.order_info.receiver_district.name,
                     "receiver_ward": this.order_info.receiver_ward.name,
                     "code_amount": this.order_info.code_amount_num,
-                    "order_value": this.product_price_num,
+                    "order_value": Number(this.product_price_num),
                     "cod_amount": parseInt(this.order_info.cod_amount_num),
                     "other_info": {
                         "transport": this.order_info.other_info.transport,
@@ -697,16 +704,13 @@ export default {
             }
             if (!this.validatePhone(this.order_info.receiver_phone)) { return 'failed' }
             if (!this.validateEmailReceiver(this.order_info.receiver_email)) { return 'failed' }
-            console.log('ccccccccccccccccccccccc');
             if (this.delivery_platform == 'VIETTEL_POST' || this.delivery_platform == 'GHN') {
                 if (!this.order_info['order_service'] || this.order_info['length'] <= 0 || this.order_info['width'] <= 0 || this.order_info['height'] <= 0) { return false }
             }
             if (this.delivery_platform == 'VIETTEL_POST') {
-                console.log('2222222222222');
                 if (!this.order_info.product_type || !this.order_info.sender_email) {
                     return false
                 }
-                console.log('3333333333333333');
                 if (!this.validateEmailSender(this.order_info.sender_email)) { return 'failed' }
             }
             if (this.delivery_platform == 'GHN') {

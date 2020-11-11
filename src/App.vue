@@ -229,6 +229,7 @@ $colorNeutral5: #f6f7f8;
 
 @mixin imageSelect {
   background: url(./assets/arrow.svg) no-repeat right #fff !important;
+  background-position-x: 98% !important;
   background-size: 20px;
   appearance: none;
 }

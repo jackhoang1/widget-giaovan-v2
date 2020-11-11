@@ -14,17 +14,16 @@
       @change="onChange()"
     />
     <ul id="autocomplete-results" v-show="isOpen" class="autocomplete-results">
-      <div>
-        <input
-          class="input-search form-control-sm"
-          ref="input_search"
-          type="text"
-          autocomplete="off"
-          v-model="search"
-          @input="onChange"
-          @change="onChange()"
-        />
-      </div>
+      <input
+        id=""
+        class="input-search form-control-sm"
+        ref="input_search"
+        type="text"
+        autocomplete="off"
+        v-model="search"
+        @input="onChange"
+        @change="onChange()"
+      />
       <li class="loading" v-if="isLoading">Loading results...</li>
       <li
         v-else
@@ -73,6 +72,7 @@ export default {
   methods: {
     onChange() {
       if (!this.list_data_input) return;
+      // Let's warn the parent that a change was made
       this.$emit("data_output", this.data_output);
       if (this.changeInput) {
         this.changeInput();
@@ -94,7 +94,7 @@ export default {
       // first uncapitalize all the things
       this.results = this.list_data_input.filter((item) => {
         return (
-          this.handleSlug(item[this.prop_name]).includes(
+          this.handleSlug(item[this.prop_name]).indexOf(
             this.handleSlug(this.search) || ""
           ) > -1
         );
@@ -105,7 +105,6 @@ export default {
       this.result = result[this.prop_name];
       this.data_output = result;
       this.isOpen = false;
-      console.log(" this.isOpen", this.isOpen);
     },
     onArrowDown(evt) {
       if (this.arrowCounter < this.results.length) {
@@ -169,6 +168,8 @@ export default {
       }
     },
     watch_data: function (val, oldValue) {
+      // console.log("what data val", val);
+      // console.log("what data oldValue", oldValue);
       this.result = "";
     },
   },
@@ -186,10 +187,12 @@ export default {
 <style lang="scss" scoped>
 @mixin imageSelect {
   background: url(../assets/arrow.svg) no-repeat right #fff !important;
+  background-position-x: 98% !important;
   background-size: 20px;
 }
 $colorHover: #dfe1e4;
 * {
+  font-size: 0.9rem;
   box-sizing: border-box;
 }
 ::-webkit-scrollbar {
@@ -220,7 +223,7 @@ $colorHover: #dfe1e4;
     }
   }
   .autocomplete-results {
-    background: white;
+    background: #fff;
     position: absolute;
     z-index: 3;
     padding: 0;
@@ -230,12 +233,9 @@ $colorHover: #dfe1e4;
     max-height: 200px;
     overflow-y: auto;
     width: 100%;
-    div {
-      text-align: center;
-      margin: 1rem 0 0.5rem;
-    }
     .input-search {
-      width: 90% !important;
+      width: 90%;
+      margin: 10px 5% 5px;
       background-color: #fff;
       outline: 0;
       box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
