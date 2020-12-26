@@ -7,7 +7,7 @@ import { APICMS, ApiBase, secretKey } from "@/services/domain.js";
 
 export default {
     components: { SearchAddress, InfoOrder, Login },
-    props: ['store_token', 'payload', 'showLogin', 'hideLogin'],
+    props: ['store_token', 'payload', 'showLogin', 'hideLogin', 'readSetting', 'updateSetting'],
     data() {
         return {
             delivery_platform: "",
@@ -38,7 +38,7 @@ export default {
                 country: "Việt Nam",
                 sender_name: "",
                 sender_phone: "",
-                sender_email: this.payload.store_email,
+                sender_email: "",
                 sender_street: "",
                 sender_address: "",
                 sender_ward: "",
@@ -84,7 +84,7 @@ export default {
                 receiver_province: false,
                 receiver_district: false,
                 receiver_ward: false,
-                code_amount: false,
+                cod_amount: false,
                 product_price: false,
                 order_payment: false,
                 order_service: false,
@@ -99,25 +99,25 @@ export default {
                 other_info: {
                     transport: false,
                 },
-                order_value_num: false,
+                product_price_num: false,
                 list_product: false,
             },
             timer: "",
             coupon_real_ghn: true,
-            option_save_info: true,
             handle_api: false,
             is_show_popup: false,
             is_show_note: false,
             is_show_order_info: false,
             is_loading: false,
-            switch_order_id: true,
+            is_auto_order_id: false,
             showSetting: false,
             showSettingContent: true,
+            is_affiliate: true,
+            otpGhn: ""
         };
     },
     async created() {
         console.log('create delivery run');
-        this.readSwitchLocal
         EventBus.$on("show-modal-setting", () => {
             this.showFormLogin()
         });
@@ -128,9 +128,8 @@ export default {
     async mounted() {
         await this.getInventory()
         this.getListProvince()
-        this.getEmailLocal()
         this.initialization
-        this.handleCreateOrderId()
+        // this.handleCreateOrderId()
     },
     computed: {
         initialization() {   //default mã ghi chú bắt buộc(GHN), hình thức thanh toán , phân loại sản phẩm(VTP)
@@ -146,14 +145,17 @@ export default {
                 this.order_info.order_payment = this.list_order_payment_ghtk[0]
                 this.order_info.other_info.transport = 'road'
             }
-        },
-        readSwitchLocal() {
-            let switch_order_id = JSON.parse(localStorage.getItem('widget_delivery_switch_order_id'))
-            console.log('switch_order_id', typeof switch_order_id);
-            if (switch_order_id) {
-                return this.switch_order_id = true
+            if (this.payload.setting && this.payload.setting.setting_data) {
+
+                let setting = this.payload.setting.setting_data
+                this.is_auto_order_id = setting.is_auto_order_id
+                if (this.is_auto_order_id)
+                    this.handleCreateOrderId()
+                if (setting.store_email)
+                    this.order_info.sender_email = setting.store_email
+                if (!this.payload.email)
+                    this.order_info.receiver_email = setting.store_email
             }
-            this.switch_order_id = false
         },
     },
     methods: {
@@ -421,6 +423,8 @@ export default {
         },
         //handle change btn select//
         async handleShopChange() {
+            if (this.delivery_platform === 'GHN')
+                this.checkAffiliate()
             await this.getPricingServices()
             this.getShippingFee()
         },
@@ -432,7 +436,7 @@ export default {
                 this.getShippingFee()
             }
         },
-        handleChangeDistrict() {
+        async handleChangeDistrict() {
             if (this.delivery_platform == "VIETTEL_POST") {
                 this.getPricingServices()
             }
@@ -440,7 +444,8 @@ export default {
                 this.getShippingFee()
             }
             if (this.delivery_platform == "GHN") {
-                this.handleShopChange()
+                await this.getPricingServices()
+                this.getShippingFee()
             }
         },
         handleChangeWard() {
@@ -484,7 +489,6 @@ export default {
                 this.order_info.shipping_fee = 0
             }
             this.$emit('shipping_fee', this.order_info.shipping_fee)
-            console.log('emit', this.order_info.shipping_fee);
         },
         handleWeightTimeout() {
             if (this.timer) {
@@ -583,7 +587,7 @@ export default {
                     "receiver_province": this.order_info.receiver_province.meta_data.ghn.province_id,
                     "receiver_district": this.order_info.receiver_district.meta_data.ghn.district_id,
                     "receiver_ward": this.order_info.receiver_ward.meta_data.ghn.code,
-                    "code_amount": this.order_info.code_amount_num,
+                    "cod_amount": this.order_info.cod_amount_num,
                     "shop_id": this.order_info.inventory._id,
                     "content": `${this.list_product_name} [Tổng số lượng ${this.product_total_item}]`,
                     "required_note": this.order_info.required_note,
@@ -609,7 +613,7 @@ export default {
                     "receiver_province": this.order_info.receiver_province.name,
                     "receiver_district": this.order_info.receiver_district.name,
                     "receiver_ward": this.order_info.receiver_ward.name,
-                    "code_amount": this.order_info.code_amount_num,
+                    "cod_amount": this.order_info.cod_amount_num,
                     "order_value": Number(this.product_price_num),
                     "cod_amount": parseInt(this.order_info.cod_amount_num),
                     "other_info": {
@@ -680,7 +684,7 @@ export default {
                 this.validate_failed.order_id = !this.order_info.order_id ? true : false
                 this.validate_failed.other_info.transport = !this.order_info.other_info.transport ? true : false
                 this.validate_failed.weight = !this.order_info.weight || this.order_info.weight / 1000 > 20 ? true : false
-                this.validate_failed.order_value_num = !this.order_info.order_value_num || this.order_info.order_value_num >= 20000000 ? true : false
+                this.validate_failed.product_price_num = !this.product_price_num || this.product_price_num >= 20000000 ? true : false
             }
         },
         validateCreateDelivery() {
@@ -702,29 +706,61 @@ export default {
                 this.swalToast('Hãy thêm hàng hoá giao vận', 'warning')
                 return 'failed'
             }
-            if (!this.validatePhone(this.order_info.receiver_phone)) { return 'failed' }
-            if (!this.validateEmailReceiver(this.order_info.receiver_email)) { return 'failed' }
-            if (this.delivery_platform == 'VIETTEL_POST' || this.delivery_platform == 'GHN') {
-                if (!this.order_info['order_service'] || this.order_info['length'] <= 0 || this.order_info['width'] <= 0 || this.order_info['height'] <= 0) { return false }
+            if (!this.validatePhone(this.order_info.receiver_phone))
+                return 'failed'
+            if (!this.validateEmailReceiver(this.order_info.receiver_email))
+                return 'failed'
+            if (
+                this.delivery_platform == 'VIETTEL_POST' ||
+                this.delivery_platform == 'GHN'
+            ) {
+                if (
+                    !this.order_info['order_service'] ||
+                    this.order_info['length'] <= 0 ||
+                    this.order_info['width'] <= 0 ||
+                    this.order_info['height'] <= 0
+                ) return false
             }
             if (this.delivery_platform == 'VIETTEL_POST') {
-                if (!this.order_info.product_type || !this.order_info.sender_email) {
+                if (
+                    !this.order_info.product_type ||
+                    !this.order_info.sender_email
+                ) {
                     return false
                 }
-                if (!this.validateEmailSender(this.order_info.sender_email)) { return 'failed' }
+                if (!this.validateEmailSender(this.order_info.sender_email))
+                    return 'failed'
             }
             if (this.delivery_platform == 'GHN') {
-                if (!this.order_info.required_note || !this.coupon_real_ghn == true) { return false }
+                if (!this.is_affiliate) {
+                    this.swalToast('Vui lòng nhập mã OTP phân quyền cho Bot Bán Hàng làm nhân viên lên đơn', 'warning')
+                    return 'failed'
+                }
+                if (this.product_price_num > 10000000) {
+                    this.swalToast('Giá trị đơn hàng để tính phí bảo hiểm không quá 10.000.000đ', 'warning')
+                }
+                if (this.order_info.cod_amount_num > 50000000) {
+                    this.swalToast('Lượng tiền mặt để tài xế thu thập từ người nhận không quá 50.000.000đ', 'warning')
+                    return 'failed'
+                }
+                if (
+                    !this.order_info.required_note ||
+                    !this.coupon_real_ghn == true
+                )
+                    return false
             }
             if (this.delivery_platform == 'GHTK') {
-                if (!this.order_info.other_info.transport || !this.order_info.order_id) {
+                if (
+                    !this.order_info.other_info.transport ||
+                    !this.order_info.order_id
+                ) {
                     return false
                 }
                 if (this.order_info.weight / 1000 > 20) {
                     this.swalToast('Khối lượng tổng đơn hàng không quá 20kg', 'warning')
                     return 'failed'
                 }
-                if (this.order_info.order_value_num >= 20000000) {
+                if (this.product_price_num >= 20000000) {
                     this.swalToast('Giá trị đơn hàng để tính phí bảo hiểm không quá 20.000.000đ', 'warning')
                     return 'failed'
                 }
@@ -794,7 +830,6 @@ export default {
                     }
                     this.swalToast(e_msg, 'error')   //VTP
                 }
-
             }
         },
         async sendMessage(delivery_id) {
@@ -837,19 +872,97 @@ export default {
             let id = `DH${num}`
             return this.order_info.order_id = id
         },
-        handleSaveInfo() {
-            let data = JSON.parse(localStorage.getItem('widget_delivery'))
-            localStorage.setItem('widget_delivery', JSON.stringify({ ...data, 'option_save_info': this.option_save_info, 'sender_email': this.order_info.sender_email }))
-        },
-        getEmailLocal() {
-            if (this.delivery_platform == "VIETTEL_POST") {
-                let data = JSON.parse(localStorage.getItem('widget_delivery'))
-                if (data && data.option_save_info) {
-                    return this.order_info.sender_email = data.sender_email
-                }
-                this.option_save_info = false
-            }
+        async checkAffiliate() {
+            try {
+                console.log(this.order_info.inventory);
+                if (
+                    this.delivery_platform !== 'GHN' ||
+                    !this.order_info.inventory
+                ) return
+                let path = `${APICMS}/v1/selling-page/delivery/check_affiliate_shop`
+                let headers = { Authorization: this.store_token }
+                let shop_id = this.order_info.inventory._id
+                let body = { shop_id }
 
+                let checkAffiliate = await Restful.post(path, body, null, headers)
+
+                if (
+                    checkAffiliate &&
+                    checkAffiliate.data &&
+                    checkAffiliate.data.data
+                ) {
+                    let check = checkAffiliate.data.data.status
+                    this.is_affiliate = check
+                    if (!check)
+                        this.sendOtp()
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        },
+        async sendOtp() {
+            try {
+                let phone = ''
+                if (this.order_info.inventory && this.order_info.inventory.phone)
+                    phone = this.order_info.inventory.phone
+
+                let path = `${APICMS}/v1/selling-page/delivery/ghn_send_otp`
+                let headers = { Authorization: this.store_token }
+                let body = { phone }
+
+                let sendOtp = await Restful.post(path, body, null, headers)
+                if (
+                    sendOtp &&
+                    sendOtp.data &&
+                    sendOtp.data.data &&
+                    sendOtp.data.data.data
+                ) {
+
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        },
+        async addAffiliate() {
+            try {
+                if (this.delivery_platform !== 'GHN') return
+                let phone = ''
+                if (this.order_info.inventory && this.order_info.inventory.phone)
+                    phone = this.order_info.inventory.phone
+
+                let path = `${APICMS}/v1/selling-page/delivery/ghn_add_affiliate`
+                let headers = { Authorization: this.store_token }
+                let body = {
+                    "phone": phone,
+                    "otp": this.otpGhn,
+                    "shop_id": this.order_info.inventory._id
+                }
+
+                let addAffiliate = await Restful.post(path, body, null, headers)
+
+                if (
+                    addAffiliate &&
+                    addAffiliate.data &&
+                    addAffiliate.data.data &&
+                    addAffiliate.data.data.status
+                ) {
+                    this.is_affiliate = true
+                    this.swalToast('Thêm thành công')
+                }
+            } catch (e) {
+                if (
+                    e &&
+                    e.data &&
+                    e.data.error_message &&
+                    e.data.error_message.code_message_value
+                ) {
+                    return this.swalToast(
+                        e.data.error_message.code_message_value,
+                        'error'
+                    )
+                }
+                this.swalToast('Lỗi khi thêm nhân viên vào cửa hàng', 'error')
+            }
         },
         handleShowNote() {
             this.is_show_note = !this.is_show_note
@@ -885,10 +998,11 @@ export default {
         handleHideOrderInfo() {
             this.is_show_order_info = false
         },
-        handleSwitch() {
-            this.switch_order_id = !this.switch_order_id
-            localStorage.setItem('widget_delivery_switch_order_id', JSON.stringify(this.switch_order_id))
-            if (this.switch_order_id) {
+        toggleSwitch() {
+            if (this.delivery_platform !== 'GHTK') return
+            this.is_auto_order_id = !this.is_auto_order_id
+            this.updateSetting('is_auto_order_id', { is_auto_order_id: this.is_auto_order_id })
+            if (this.is_auto_order_id) {
                 return this.handleCreateOrderId()
             }
             this.order_info.order_id = ''
@@ -926,6 +1040,7 @@ export default {
             }
         },
         async formatNumberCod(string) {
+            if (!string) return
             let number = string.replace(/\D/g, "")
             this.order_info.cod_amount_num = number
             this.order_info.cod_amount = new Intl.NumberFormat("de-DE", {
@@ -935,6 +1050,7 @@ export default {
             return number.length
         },
         async formatNumberPrice(string) {
+            if (!string) return
             let number = string.replace(/\D/g, "")
             this.product_price_num = number
             this.product_price = new Intl.NumberFormat("de-DE", {
@@ -964,6 +1080,9 @@ export default {
         },
     },
     watch: {
+        'order_info.inventory': function () {
+            this.handleShopChange()
+        },
         store_token: function () {
             this.order_info.receiver_name = this.payload.name
             this.order_info.receiver_phone = this.payload.phone
@@ -990,6 +1109,22 @@ export default {
         },
         product_price_num: function () {
             this.handlePriceTimeout()
+        },
+        'payload.setting': function (nValue, oValue) {
+            console.log('watch run 1111');
+            if (
+                this.payload.setting &&
+                this.payload.setting.setting_data
+            ) {
+                let setting = this.payload.setting.setting_data
+                this.is_auto_order_id = setting.is_auto_order_id
+                if (this.is_auto_order_id)
+                    this.handleCreateOrderId()
+                if (setting.store_email)
+                    this.order_info.sender_email = setting.store_email
+                if (!this.payload.email)
+                    this.order_info.receiver_email = setting.store_email
+            }
         }
     },
     filters: {

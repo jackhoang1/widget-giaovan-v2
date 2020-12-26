@@ -29,7 +29,7 @@ const Toast2 = Swal.mixin({
 
 
 export default {
-    props: ['isLogin', 'showLogin', 'hideLogin', 'access_token', 'forceRerender'],
+    props: ['isLogin', 'showLogin', 'hideLogin', 'access_token', 'forceRerender', 'readSetting', 'updateSetting'],
     data() {
         return {
             cms_account: "",
@@ -49,14 +49,8 @@ export default {
         handleChooseStore(item) {
             this.store_token = item.access_token;
             this.$emit('store-token', item.access_token)
-            localStorage.removeItem("widget_delivery")
-            let data = {}
-            if (item.store_email) {
-                // this.payload.store_email = item.store_email;
-                this.$emit('store-email', item.store_email)
-                data["store_email"] = item.store_email
-            }
-            localStorage.setItem("widget_delivery", JSON.stringify(data))
+            if (item.store_email)
+                this.updateSetting('store_email', { email: item.store_email })
             this.runOAuth()
         },
         async runSignIn() {

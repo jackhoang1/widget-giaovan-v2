@@ -1,8 +1,5 @@
 <template>
   <div class>
-    <!-- Xác thực App -->
-
-    <!--End Xác thực App -->
     <!-- xác thực app  -->
     <Login
       v-if="isLogin || (!is_oauth && !overlaySign)"
@@ -11,6 +8,8 @@
       :hideLogin="hideLogin"
       :access_token="access_token"
       :forceRerender="forceRerender"
+      :readSetting="readSetting"
+      :updateSetting="updateSetting"
       :key="componentKey"
       @store-token="store_token = $event"
       @store-email="payload.store_email = $event"
@@ -24,6 +23,8 @@
         :payload="payload"
         :showLogin="showLogin"
         :hideLogin="hideLogin"
+        :readSetting="readSetting"
+        :updateSetting="updateSetting"
         :key="componentKey"
       />
     </div>
@@ -34,7 +35,7 @@
 import Restful from "@/services/resful.js";
 import Delivery from "@/components/delivery/Delivery.vue";
 import Login from "@/components/login/Login.vue";
-import { APICMS, ApiBase, secretKey } from "@/services/domain.js";
+import { APICMS, ApiBase, APISETTING, secretKey } from "@/services/domain.js";
 
 let urlString = location.href;
 let url = new URL(urlString);
@@ -88,6 +89,7 @@ export default {
       store_token: "",
       payload: {
         psid: "",
+        asid: "",
         fb_page_id: "",
         token_bbh: "",
         name: "",
@@ -95,11 +97,13 @@ export default {
         email: "",
         customer_id: "",
         store_email: "",
+        setting: "",
       },
     };
   },
   async created() {
     await this.partnerAuth();
+    this.readSetting();
   },
   methods: {
     forceRerender() {
@@ -137,6 +141,9 @@ export default {
             if (customer.public_profile.fb_page_id) {
               this.payload.fb_page_id = customer.public_profile.fb_page_id;
             }
+            if (customer.public_profile.current_staff_id) {
+              this.payload.asid = customer.public_profile.current_staff_id;
+            }
           }
           if (customer.conversation_chatbot) {
             this.payload.token_bbh =
@@ -158,7 +165,6 @@ export default {
               .split(" ")
               .join("");
           }
-          this.handleLocalStorage();
         }
       } catch (e) {
         // Chạy vào SignIn
@@ -167,17 +173,94 @@ export default {
         console.log("info err", e);
       }
     },
+    async createSetting() {
+      try {
+        let path = `${APISETTING}/v1/setting/WidgetSetting/create_setting`;
+        let body = {
+          fb_page_id: this.payload.fb_page_id,
+          asid: this.payload.asid,
+          secret_key: secretKey,
+          setting_data: "",
+        };
+
+        let create_setting = await Restful.post(path, body, null, null);
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    async readSetting() {
+      try {
+        let path = `${APISETTING}/v1/setting/WidgetSetting/read_setting`;
+        let body = {
+          fb_page_id: this.payload.fb_page_id,
+          secret_key: secretKey,
+          asid: this.payload.asid,
+        };
+
+        let read_setting = await Restful.post(path, body, null, null);
+
+        if (read_setting && read_setting.data && read_setting.data.data) {
+          let setting = read_setting.data.data;
+          if (setting.length === 0) return this.createSetting();
+          this.payload.setting = setting[0];
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    async updateSetting(name, data) {
+      try {
+        if (
+          !data ||
+          (name !== "store_email" &&
+            name !== "client_id" &&
+            name !== "msg_content" &&
+            name !== "is_auto_order_id")
+        )
+          return;
+
+        let setting_data = { ...this.payload.setting.setting_data };
+
+        if (name === "store_email") {
+          setting_data.store_email = data.email;
+        }
+        if (name === "client_id") {
+          setting_data.client_id = data.client_id;
+        }
+        if (name === "msg_content") {
+          setting_data.msg_content = data.msg_content;
+        }
+        if (name === "is_auto_order_id") {
+          setting_data.is_auto_order_id = data.is_auto_order_id;
+        }
+        let path = `${APISETTING}/v1/setting/WidgetSetting/update_setting`;
+        let body = {
+          id: this.payload.setting.id,
+          setting_data: setting_data,
+        };
+
+        let update_setting = await Restful.post(path, body, null, null);
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    async delete_setting() {
+      try {
+        let path = `${APISETTING}/v1/setting/WidgetSetting/delete_setting`;
+        let body = {
+          fb_page_id: this.payload.fb_page_id,
+        };
+
+        let delete_setting = await Restful.post(path, body, null, null);
+      } catch (e) {
+        console.log(e);
+      }
+    },
     showLogin() {
       this.isLogin = true;
     },
     hideLogin() {
       this.isLogin = false;
-    },
-    handleLocalStorage() {
-      let data = JSON.parse(localStorage.getItem("widget_delivery"));
-      if (data && data.store_email) {
-        this.payload.store_email = data.store_email;
-      }
     },
   },
 };
@@ -373,6 +456,9 @@ body {
   outline: none;
   border: none;
   border-radius: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   -webkit-box-shadow: 0px 2px 10px rgba(255, 95, 11, 0.3);
   box-shadow: 0px 2px 10px rgba(255, 95, 11, 0.3);
   &:hover {
@@ -429,6 +515,10 @@ body {
       visibility: visible;
       opacity: 1;
     }
+  }
+  .tooltip-medium {
+    width: 10rem !important;
+    white-space: normal !important;
   }
   .tooltip-top {
     @include tooltip-position;

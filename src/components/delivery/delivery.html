@@ -24,12 +24,12 @@
                 <div class="col-3 d-flex align-items-center">
                     <div class="order__switch d-flex justify-content-start align-items-center">
                         <div class="margin__right--5">
-                            <div class="switch" :class="{'switch-on':switch_order_id}" @click="handleSwitch">
-                                <div class="circle" :class="{'circle-on':switch_order_id}"></div>
+                            <div class="switch" :class="{'switch-on':is_auto_order_id}" @click="toggleSwitch">
+                                <div class="circle" :class="{'circle-on':is_auto_order_id}"></div>
                             </div>
                         </div>
                         <div class="d-flex align-items-center">
-                            <div class="d-flex " v-if="switch_order_id">
+                            <div class="d-flex " v-if="is_auto_order_id">
                                 <p class="tooltip text__accent--medium">Bật<span class="tooltip-left">Tự động tạo mã
                                         đơn</span>
                                 </p>
@@ -49,8 +49,7 @@
             <div class="margin__bottom--12 form-row">
                 <div class="col">
                     <select class="form-control-sm input-group input-group-sm"
-                        :class="{'validate-failed':validate_failed.inventory}" v-model="order_info.inventory"
-                        @change="handleShopChange">
+                        :class="{'validate-failed':validate_failed.inventory}" v-model="order_info.inventory">
                         <option value>Kho hàng/Inventories</option>
                         <option v-for="(inventory,index) in list_inventories" :key="index" :value="inventory">
                             {{inventory.name||inventory.pick_name}}
@@ -58,16 +57,21 @@
                     </select>
                 </div>
             </div>
+            <div class="affiliate margin__bottom--12 form-row" v-if="delivery_platform=='GHN'&&!is_affiliate">
+                <div class="col d-flex align-items-center">
+                    <div class="tooltip" style="width: 100%">
+                        <input class="form-control-sm" type="text" placeholder="Mã OTP" v-model="otpGhn">
+                        <span class="tooltip-top tooltip-medium">Nhập OTP để phân quyền cho Bot Bán Hàng làm nhân viên
+                            lên đơn</span>
+                    </div>
+                    <button class="btn-pill" @click="addAffiliate()">Xác nhận</button>
+                </div>
+            </div>
             <!-- VTP sender email -->
             <div class="margin__bottom--12 form-row" v-if="!payload.store_email&&delivery_platform=='VIETTEL_POST'">
                 <div class="col">
                     <input class="form-control-sm" :class="{'validate-failed':validate_failed.sender_email}" type="text"
-                        placeholder="Email bên gửi..." v-model="order_info.sender_email" @change="handleSaveInfo">
-                    <div class="margin__top--7 d-flex justify-content-end align-items-center">
-                        <input class="m-0 mr-2" id="checkbox__save--email" type="checkbox" v-model="option_save_info"
-                            @change="handleSaveInfo">
-                        <label class="cursor__pointer" for="checkbox__save--email"><span></span>Lưu email</label>
-                    </div>
+                        placeholder="Email bên gửi..." v-model="order_info.sender_email">
                 </div>
             </div>
         </div>
@@ -113,7 +117,8 @@
             </div>
         </div>
         <input v-model="order_info.receiver_street" type="text" class="margin__bottom--12 form-control-sm"
-            :class="{'validate-failed':validate_failed.receiver_street}" placeholder="Địa chỉ cụ thể" @keyup="handleAddressTimeout"/>
+            :class="{'validate-failed':validate_failed.receiver_street}" placeholder="Địa chỉ cụ thể"
+            @keyup="handleAddressTimeout" />
         <!-- ---------------------------------- -->
         <!-- Thêm hàng hoá -->
         <div class="product__add">
@@ -162,18 +167,17 @@
                     <span class="tooltip-top">Khối lượng (gram)</span>
                 </div>
             </div>
-            <div class="cursor__pointer d-flex align-items-center"
-                :class="{'validate-failed':validate_failed.list_product}" @click="handleAddProduct">
-                <div class="icon__add--cursor margin__right--12 d-flex">
+            <div class="d-flex align-items-center"
+                :class="{'validate-failed':validate_failed.list_product}">
+                <div class="icon__add--cursor margin__right--12 d-flex"  @click="handleAddProduct">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 5V19" stroke="#FF5F0B" stroke-width="1.5" stroke-linecap="round"
                             stroke-linejoin="round" />
                         <path d="M5 12H19" stroke="#FF5F0B" stroke-width="1.5" stroke-linecap="round"
                             stroke-linejoin="round" />
                     </svg>
-
                 </div>
-                <p class="text__accent--medium">Thêm hàng hoá</p>
+                <p class="cursor__pointer text__accent--medium"  @click="handleAddProduct">Thêm hàng hoá</p>
             </div>
             <hr>
         </div>
