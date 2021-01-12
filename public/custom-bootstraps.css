@@ -69,6 +69,10 @@ img {
 .flex-grow-1 {
     flex-grow: 1 !important;
 }
+.justify-content-around {
+    -ms-flex-pack: distribute !important;
+    justify-content: space-around !important;
+}
 .justify-content-between {
     justify-content: space-between !important;
 }

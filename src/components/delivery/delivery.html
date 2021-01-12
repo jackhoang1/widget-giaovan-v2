@@ -124,41 +124,25 @@
         <div class="product__add">
             <p class="margin__bottom--6 font__weight--600">Hàng hoá - Số lượng</p>
             <div class="margin__bottom--12 form-row d-flex align-items-center">
-                <div class="col-10">
+                <div class="col-9">
                     <input class="form-control-sm m-0" type="text" placeholder="Tên hàng hoá" title="Tên hàng hoá"
                         v-model="product.name">
                 </div>
-                <div class="product__add--quantity col-2 d-flex justify-content-end align-items-center">
-                    <div class="margin__right--12">
-                        <div class="tooltip">
-                            <p>{{product.quantity}}</p><span class="tooltip-top">Số lượng</span>
+                <div class="col-3">
+                    <div class="tooltip quantity-sub-add d-flex justify-content-around align-items-center">
+                        <div class="d-flex align-items-center" @click="minusProduct">
+                            <img src="@/assets/icon/minus.png" alt="">
+                        </div>
+                        <p class="text__neutral--medium d-flex justify-content-center align-items-center ">
+                            {{ product.quantity }}
+                        </p><span class="tooltip-top">Số lượng</span>
+                        <div class="d-flex align-items-center" @click="plusProduct">
+                            <img src="@/assets/icon/add.png" alt="">
                         </div>
                     </div>
-                    <div class="d-flex flex-column align-items-center">
-                        <div class="cursor__pointer" @click="plusProduct">
-                            <svg class="hover-scale" width="16" height="16" viewBox="0 0 16 16" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path d="M4 10L8 6L12 10" stroke="#BCC0C6" stroke-width="1.5" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                                <path
-                                    d="M15 4L15 12L17 12L17 4L15 4ZM12 15L4 15L4 17L12 17L12 15ZM0.999999 12L1 4L-1 4L-1 12L0.999999 12ZM4 0.999999L12 1L12 -1L4 -1L4 0.999999ZM1 4C1 2.34315 2.34315 0.999999 4 0.999999L4 -1C1.23858 -1 -1 1.23858 -1 4L1 4ZM4 15C2.34314 15 0.999999 13.6569 0.999999 12L-1 12C-1 14.7614 1.23858 17 4 17L4 15ZM15 12C15 13.6569 13.6569 15 12 15L12 17C14.7614 17 17 14.7614 17 12L15 12ZM17 4C17 1.23858 14.7614 -1 12 -1L12 1C13.6569 1 15 2.34315 15 4L17 4Z"
-                                    fill="#F6F7F8" />
-                            </svg>
 
-                        </div>
-                        <div class="cursor__pointer" @click="minusProduct">
-                            <svg class="hover-scale" width="16" height="16" viewBox="0 0 16 16" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 6L8 10L4 6" stroke="#BCC0C6" stroke-width="1.5" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                                <path
-                                    d="M1 12L0.999999 4L-1 4L-1 12L1 12ZM4 1L12 0.999999L12 -1L4 -1L4 1ZM15 4L15 12L17 12L17 4L15 4ZM12 15L4 15L4 17L12 17L12 15ZM15 12C15 13.6569 13.6569 15 12 15L12 17C14.7614 17 17 14.7614 17 12L15 12ZM12 0.999999C13.6569 0.999999 15 2.34314 15 4L17 4C17 1.23858 14.7614 -1 12 -1L12 0.999999ZM0.999999 4C0.999999 2.34315 2.34315 1 4 1L4 -1C1.23858 -1 -1 1.23858 -1 4L0.999999 4ZM-1 12C-1 14.7614 1.23858 17 4 17L4 15C2.34315 15 1 13.6569 1 12L-1 12Z"
-                                    fill="#F6F7F8" />
-                            </svg>
-
-                        </div>
-                    </div>
                 </div>
+
             </div>
             <div class="margin__bottom--12 form-row" v-if="delivery_platform=='GHTK'">
                 <div class="col-10 tooltip">
@@ -167,9 +151,8 @@
                     <span class="tooltip-top">Khối lượng (gram)</span>
                 </div>
             </div>
-            <div class="d-flex align-items-center"
-                :class="{'validate-failed':validate_failed.list_product}">
-                <div class="icon__add--cursor margin__right--12 d-flex"  @click="handleAddProduct">
+            <div class="d-flex align-items-center" :class="{'validate-failed':validate_failed.list_product}">
+                <div class="icon__add--cursor margin__right--12 d-flex" @click="handleAddProduct">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 5V19" stroke="#FF5F0B" stroke-width="1.5" stroke-linecap="round"
                             stroke-linejoin="round" />
@@ -177,7 +160,7 @@
                             stroke-linejoin="round" />
                     </svg>
                 </div>
-                <p class="cursor__pointer text__accent--medium"  @click="handleAddProduct">Thêm hàng hoá</p>
+                <p class="cursor__pointer text__accent--medium" @click="handleAddProduct">Thêm hàng hoá</p>
             </div>
             <hr>
         </div>

@@ -32,6 +32,16 @@ body::-webkit-scrollbar {
             position: relative;
         }
         .product__add {
+            .quantity-sub-add {
+                border: 1px solid #dfe1e4;
+                border-radius: 4px;
+                height: 32px;
+                img {
+                    width: 16px;
+                    height: 16px;
+                    cursor: pointer;
+                }
+            }
             .product__add--quantity {
                 img {
                     height: 17px;

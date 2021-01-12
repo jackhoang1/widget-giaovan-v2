@@ -845,7 +845,7 @@ export default {
                                 "buttons": [
                                     {
                                         "type": "web_url",
-                                        "url": `https://devbbh.tk/dev-cms/#/deliver/?access_token=${this.store_token}&order_id=${delivery_id}`,
+                                        "url": `${APICMS}/dev-cms/#/deliver/?access_token=${this.store_token}&order_id=${delivery_id}`,
                                         "title": "Kiểm tra vận đơn"
                                     }
                                 ]
