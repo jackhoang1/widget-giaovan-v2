@@ -3,13 +3,17 @@ import Restful from "@/services/resful.js"
 import SearchAddress from "@/components/SearchAddress.vue"
 import InfoOrder from "@/components/infoOrder/InfoOrder.vue"
 import Login from "@/components/login/Login.vue"
-import { APICMS, ApiBase, secretKey } from "@/services/domain.js";
+import compDetectAddress from "@/components/DetectAddress.vue"
+import { APICMS, ApiBase, secretKey, apiCmsProd } from "@/services/domain.js";
+
+
 
 export default {
-    components: { SearchAddress, InfoOrder, Login },
+    components: { compDetectAddress, SearchAddress, InfoOrder, Login },
     props: ['store_token', 'payload', 'showLogin', 'hideLogin', 'readSetting', 'updateSetting'],
     data() {
         return {
+            detectAddress: "",
             delivery_platform: "",
             list_inventories: "",
             pack_service_list: "",
@@ -38,7 +42,7 @@ export default {
                 country: "Việt Nam",
                 sender_name: "",
                 sender_phone: "",
-                sender_email: "",
+                sender_email: "botbanhang@gmail.com",
                 sender_street: "",
                 sender_address: "",
                 sender_ward: "",
@@ -47,7 +51,8 @@ export default {
 
                 receiver_name: this.payload.name,
                 receiver_phone: this.payload.phone,
-                receiver_email: this.payload.email,
+                receiver_email: "botbanhang@gmail.com",
+                receiver_home: "",
                 receiver_street: "",
                 receiver_address: "",
                 receiver_ward: "",
@@ -76,11 +81,9 @@ export default {
                 order_id: false,
                 inventory: false,
                 country: false,
-                sender_email: false,
                 receiver_name: false,
                 receiver_phone: false,
                 receiver_street: false,
-                receiver_email: false,
                 receiver_province: false,
                 receiver_district: false,
                 receiver_ward: false,
@@ -151,10 +154,6 @@ export default {
                 this.is_auto_order_id = setting.is_auto_order_id
                 if (this.is_auto_order_id)
                     this.handleCreateOrderId()
-                if (setting.store_email)
-                    this.order_info.sender_email = setting.store_email
-                if (!this.payload.email)
-                    this.order_info.receiver_email = setting.store_email
             }
         },
     },
@@ -175,6 +174,8 @@ export default {
         },
         async getListDistrict() {
             try {
+                if (!this.order_info.receiver_province.province_id) return console.log('require province_id');
+
                 let path = `${APICMS}/v1/selling-page/locations/districts_v2`
                 let params = { 'province_id': this.order_info.receiver_province.province_id }
                 let headers = { 'Authorization': this.store_token }
@@ -194,6 +195,7 @@ export default {
         },
         async getListWard() {
             try {
+                if (!this.order_info.receiver_district.district_id) return console.log('require district_id');
                 let path = `${APICMS}/v1/selling-page/locations/wards_v2`
                 let params = { 'district_id': this.order_info.receiver_district.district_id }
                 let headers = { 'Authorization': this.store_token }
@@ -218,6 +220,7 @@ export default {
         resetChangeDistrict() {
             this.ward = ""
         },
+
         async getInventory() {
             try {
                 let path = `${APICMS}/v1/selling-page/delivery/delivery_inventory`
@@ -346,7 +349,7 @@ export default {
                         !this.product_price_num ||
                         !this.order_info.other_info.transport
                     ) return
-                    this.order_info.receiver_address = `${this.order_info.receiver_street}, ${this.order_info.receiver_ward.name}, ${this.order_info.receiver_district.name}, ${this.order_info.receiver_province.name}`
+                    this.order_info.receiver_address = `${this.order_info.receiver_home} ${this.order_info.receiver_street}, ${this.order_info.receiver_ward.name}, ${this.order_info.receiver_district.name}, ${this.order_info.receiver_province.name}`
                     this.order_info.weight = 0
                     this.list_product.forEach(product => {
                         this.order_info.weight += product.weight
@@ -530,10 +533,10 @@ export default {
         },
         handleAddress() {
             if (this.delivery_platform == 'VIETTEL_POST') {
-                this.order_info.receiver_address = `${this.order_info.receiver_street}, ${this.order_info.receiver_ward.name}, ${this.order_info.receiver_district.name}, ${this.order_info.receiver_province.name}`
+                this.order_info.receiver_address = `${this.order_info.receiver_home} ${this.order_info.receiver_street}, ${this.order_info.receiver_ward.name}, ${this.order_info.receiver_district.name}, ${this.order_info.receiver_province.name}`
             }
             if (this.delivery_platform == 'GHN') {
-                this.order_info.receiver_address = `${this.order_info.receiver_street}, ${this.order_info.receiver_ward.meta_data.ghn.name}, ${this.order_info.receiver_district.meta_data.ghn.name}, ${this.order_info.receiver_province.name}`
+                this.order_info.receiver_address = `${this.order_info.receiver_home} ${this.order_info.receiver_street}, ${this.order_info.receiver_ward.meta_data.ghn.name}, ${this.order_info.receiver_district.meta_data.ghn.name}, ${this.order_info.receiver_province.name}`
             }
         },
         infoDelivery() {
@@ -633,32 +636,11 @@ export default {
             this.validate_failed.receiver_phone = !is_phone ? true : false
             this.swalToast('Số điện thoại không hợp lệ', 'error')
         },
-        validateEmail(email) {
-            let reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
-            let is_email = reg.test(email)
-            if (!is_email) {
-                this.swalToast('Email không hợp lệ!', 'error')
-            }
-            return is_email
-        },
-        validateEmailReceiver(email) {
-            let is_email = this.validateEmail(email)
-            if (!is_email)
-                this.validate_failed.receiver_email = !is_email ? true : false
-            return is_email
-        },
-        validateEmailSender(email) {
-            let is_email = this.validateEmail(email)
-            if (!is_email)
-                this.validate_failed.sender_email = !is_email ? true : false
-            return is_email
-        },
         changeClassValidate() {
             this.validate_failed.inventory = !this.order_info.inventory ? true : false
             this.validate_failed.receiver_name = !this.order_info.receiver_name ? true : false
             this.validate_failed.receiver_phone = !this.order_info.receiver_phone ? true : false
             this.validate_failed.receiver_street = !this.order_info.receiver_street ? true : false
-            this.validate_failed.receiver_email = !this.order_info.receiver_email ? true : false
             this.validate_failed.receiver_province = !this.order_info.receiver_province ? true : false
             this.validate_failed.receiver_district = !this.order_info.receiver_district ? true : false
             this.validate_failed.receiver_ward = !this.order_info.receiver_ward ? true : false
@@ -674,7 +656,6 @@ export default {
             }
             if (this.delivery_platform == 'VIETTEL_POST') {
                 this.validate_failed.product_type = !this.order_info.product_type ? true : false
-                this.validate_failed.sender_email = !this.order_info.sender_email ? true : false
             }
             if (this.delivery_platform == 'GHN') {
                 this.validate_failed.required_note = !this.order_info.required_note ? true : false
@@ -694,7 +675,6 @@ export default {
                 !this.order_info.receiver_name ||
                 !this.order_info.receiver_phone ||
                 !this.order_info.receiver_street ||
-                !this.order_info.receiver_email ||
                 !this.order_info.receiver_province ||
                 !this.order_info.receiver_district ||
                 !this.order_info.receiver_ward ||
@@ -707,8 +687,6 @@ export default {
                 return 'failed'
             }
             if (!this.validatePhone(this.order_info.receiver_phone))
-                return 'failed'
-            if (!this.validateEmailReceiver(this.order_info.receiver_email))
                 return 'failed'
             if (
                 this.delivery_platform == 'VIETTEL_POST' ||
@@ -723,13 +701,11 @@ export default {
             }
             if (this.delivery_platform == 'VIETTEL_POST') {
                 if (
-                    !this.order_info.product_type ||
-                    !this.order_info.sender_email
+                    !this.order_info.product_type
                 ) {
                     return false
                 }
-                if (!this.validateEmailSender(this.order_info.sender_email))
-                    return 'failed'
+
             }
             if (this.delivery_platform == 'GHN') {
                 if (!this.is_affiliate) {
@@ -845,7 +821,7 @@ export default {
                                 "buttons": [
                                     {
                                         "type": "web_url",
-                                        "url": `${APICMS}/dev-cms/#/deliver/?access_token=${this.store_token}&order_id=${delivery_id}`,
+                                        "url": `${apiCmsProd}/?access_token=${this.store_token}&order_id=${delivery_id}`,
                                         "title": "Kiểm tra vận đơn"
                                     }
                                 ]
@@ -1080,16 +1056,32 @@ export default {
         },
     },
     watch: {
+        detectAddress: function (newVal) {
+            console.log('detectAddress', newVal);
+            if (newVal) {
+                this.order_info.receiver_province = newVal.province
+                if (newVal.district)
+                    this.order_info.receiver_district = newVal.district
+                else {
+                    this.getListDistrict()
+                }
+                if (newVal.ward)
+                    this.order_info.receiver_ward = newVal.ward
+                else {
+                    this.getListWard()
+                }
+                if (newVal.street)
+                    this.order_info.receiver_street = newVal.street.name
+                if (newVal.house_number)
+                    this.order_info.receiver_home = newVal.house_number.name
+            }
+        },
         'order_info.inventory': function () {
             this.handleShopChange()
         },
         store_token: function () {
             this.order_info.receiver_name = this.payload.name
             this.order_info.receiver_phone = this.payload.phone
-            this.order_info.receiver_email = this.payload.email
-        },
-        'payload.store_email': function () {
-            this.order_info.sender_email = this.payload.store_email
         },
         'order_info.order_service': function () {
             this.handleShippingFeeVTP()
@@ -1120,10 +1112,6 @@ export default {
                 this.is_auto_order_id = setting.is_auto_order_id
                 if (this.is_auto_order_id)
                     this.handleCreateOrderId()
-                if (setting.store_email)
-                    this.order_info.sender_email = setting.store_email
-                if (!this.payload.email)
-                    this.order_info.receiver_email = setting.store_email
             }
         }
     },

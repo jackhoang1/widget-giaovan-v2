@@ -56,6 +56,7 @@ export default {
     "changeInput",
     "clearInput",
     "watch_data",
+    "watchDataBind",
   ],
   data() {
     return {
@@ -73,7 +74,7 @@ export default {
     onChange() {
       if (!this.list_data_input) return;
       // Let's warn the parent that a change was made
-      this.$emit("data_output", this.data_output);
+      this.$emit("data-output", this.data_output);
       if (this.changeInput) {
         this.changeInput();
       }
@@ -171,6 +172,9 @@ export default {
       // console.log("what data val", val);
       // console.log("what data oldValue", oldValue);
       this.result = "";
+    },
+    watchDataBind: function (newVal) {
+      if (newVal) this.result = this.watchDataBind.name;
     },
   },
   mounted() {

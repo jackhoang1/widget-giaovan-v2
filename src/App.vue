@@ -12,7 +12,6 @@
       :updateSetting="updateSetting"
       :key="componentKey"
       @store-token="store_token = $event"
-      @store-email="payload.store_email = $event"
     >
     </Login>
     <div v-if="overlaySign" class="overlay"></div>
@@ -94,9 +93,7 @@ export default {
         token_bbh: "",
         name: "",
         phone: "",
-        email: "",
         customer_id: "",
-        store_email: "",
         setting: "",
       },
     };
@@ -148,12 +145,6 @@ export default {
           if (customer.conversation_chatbot) {
             this.payload.token_bbh =
               customer.conversation_chatbot.bbh_public_token;
-          }
-          if (
-            customer.conversation_contact &&
-            customer.conversation_contact.client_email
-          ) {
-            this.payload.email = customer.conversation_contact.client_email;
           }
           if (
             customer.conversation_contact &&
@@ -212,7 +203,7 @@ export default {
       try {
         if (
           !data ||
-          (name !== "store_email" &&
+          (
             name !== "client_id" &&
             name !== "msg_content" &&
             name !== "is_auto_order_id")
@@ -221,9 +212,6 @@ export default {
 
         let setting_data = { ...this.payload.setting.setting_data };
 
-        if (name === "store_email") {
-          setting_data.store_email = data.email;
-        }
         if (name === "client_id") {
           setting_data.client_id = data.client_id;
         }

@@ -49,9 +49,7 @@ export default {
         handleChooseStore(item) {
             this.store_token = item.access_token;
             this.$emit('store-token', item.access_token)
-            if (item.store_email)
-                this.updateSetting('store_email', { email: item.store_email })
-            this.runOAuth()
+                this.runOAuth()
         },
         async runSignIn() {
             try {

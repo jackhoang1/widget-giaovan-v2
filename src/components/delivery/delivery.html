@@ -67,13 +67,7 @@
                     <button class="btn-pill" @click="addAffiliate()">Xác nhận</button>
                 </div>
             </div>
-            <!-- VTP sender email -->
-            <div class="margin__bottom--12 form-row" v-if="!payload.store_email&&delivery_platform=='VIETTEL_POST'">
-                <div class="col">
-                    <input class="form-control-sm" :class="{'validate-failed':validate_failed.sender_email}" type="text"
-                        placeholder="Email bên gửi..." v-model="order_info.sender_email">
-                </div>
-            </div>
+
         </div>
         <div style="position: relative;">
             <div class="margin__bottom--8 font__weight--600">Khách hàng</div>
@@ -88,8 +82,11 @@
                     :class="{'validate-failed':validate_failed.receiver_phone}" placeholder="Số điện thoại" />
             </div>
         </div>
-        <input v-model="order_info.receiver_email" type="email" class="margin__bottom--12 form-control-sm"
-            :class="{'validate-failed':validate_failed.receiver_email}" placeholder="Email" />
+       <div class="order__address margin__bottom--12" :class="{'validate-failed':validate_failed.receiver_street}">
+            <compDetectAddress :handleAddressTimeout="handleAddressTimeout" :placeholder="'Địa chỉ cụ thể'" :store_token="store_token"
+                @data-output="detectAddress = $event" @text-address="order_info.receiver_street = $event" />
+
+        </div>
         <div class="margin__bottom--12 form-row">
             <div class="order__address col" :class="{'validate-failed-address':validate_failed.country}">
                 <select v-model="order_info.country" class="form-control-sm m-0">
@@ -100,25 +97,27 @@
             <!-- Search address -->
             <div class="order__address col" :class="{'validate-failed-address':validate_failed.receiver_province}">
                 <SearchAddress :list_data_input="list_province" :placeholder="'Tỉnh/TP'"
-                    @data_output="order_info.receiver_province=$event" :getData="getListDistrict"
-                    :clearInput="resetChangeCity" :prop_name="'name'" />
+                    @data-output="order_info.receiver_province=$event" :getData="getListDistrict"
+                    :clearInput="resetChangeCity" :prop_name="'name'" :watchDataBind="order_info.receiver_province" />
             </div>
         </div>
         <div class="margin__bottom--12 form-row">
             <div class="order__address col" :class="{'validate-failed-address':validate_failed.receiver_district}">
                 <SearchAddress :list_data_input="list_district_receiver" :placeholder="'Quận/Huyện'"
-                    @data_output="order_info.receiver_district=$event" :getData="getListWard"
-                    :clearInput="resetChangeDistrict" :prop_name="'name'" :watch_data="order_info.receiver_province" />
+                    @data-output="order_info.receiver_district=$event" :getData="getListWard"
+                    :clearInput="resetChangeDistrict" :prop_name="'name'" :watch_data="order_info.receiver_province"
+                    :watchDataBind="order_info.receiver_district" />
             </div>
             <div class="order__address col" :class="{'validate-failed-address':validate_failed.receiver_ward}">
                 <SearchAddress :list_data_input="list_ward_receiver" :placeholder="'Phường/Xã'"
-                    @data_output="order_info.receiver_ward=$event" :getData="false" :clearInput="false"
-                    :prop_name="'name'" :watch_data="order_info.receiver_province" />
+                    @data-output="order_info.receiver_ward=$event" :getData="false" :clearInput="false"
+                    :prop_name="'name'" :watch_data="order_info.receiver_province"
+                    :watchDataBind="order_info.receiver_ward" />
             </div>
         </div>
-        <input v-model="order_info.receiver_street" type="text" class="margin__bottom--12 form-control-sm"
+        <!-- <input v-model="order_info.receiver_street" type="text" class="margin__bottom--12 form-control-sm"
             :class="{'validate-failed':validate_failed.receiver_street}" placeholder="Địa chỉ cụ thể"
-            @keyup="handleAddressTimeout" />
+            @keyup="handleAddressTimeout" /> -->
         <!-- ---------------------------------- -->
         <!-- Thêm hàng hoá -->
         <div class="product__add">
@@ -145,7 +144,7 @@
 
             </div>
             <div class="margin__bottom--12 form-row" v-if="delivery_platform=='GHTK'">
-                <div class="col-10 tooltip">
+                <div class="col-9 tooltip">
                     <input class="form-control-sm text-center" type="number" min="0" title="Khối lượng (gram)"
                         v-model="product.weight">
                     <span class="tooltip-top">Khối lượng (gram)</span>
