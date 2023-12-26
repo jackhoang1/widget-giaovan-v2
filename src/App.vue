@@ -18,6 +18,7 @@
     <!-- component giao vận -->
     <div v-if="is_oauth" class="widget">
       <Delivery
+        v-if="reload"
         :store_token="store_token"
         :payload="payload"
         :showLogin="showLogin"
@@ -96,11 +97,15 @@ export default {
         customer_id: "",
         setting: "",
       },
+      reload: true
     };
   },
   async created() {
     await this.partnerAuth();
     this.readSetting();
+  },
+  mounted() {
+    this.listenParentEvent()
   },
   methods: {
     forceRerender() {
@@ -250,6 +255,45 @@ export default {
     hideLogin() {
       this.isLogin = false;
     },
+    listenParentEvent() {
+      try {
+        // * Khai báo lại this
+        const _this = this
+
+        // * Lắng nghe event message từ parent
+        window.addEventListener('message', async function (event) {
+          if (event &&
+            event.data &&
+            event.data.type &&
+            event.data.from &&
+            event.data.from === 'CHATBOX' &&
+            event.data.payload
+          ) {
+            // * Phân loại event type
+            switch (event.data.type) {
+              case 'RELOAD':
+
+                // * Ghi đè lại access_token
+                access_token = event.data.payload[
+                  'access_token'
+                ] || ''
+
+                _this.access_token = access_token
+                await _this.partnerAuth();
+                _this.reload = false
+
+                this.setTimeout(function() {
+                  _this.reload = true
+                }, 100)
+
+                break;
+              default: console.log("EVENT_TYPE_INVALID")
+                break;
+            }
+          }
+        });
+      } catch (error) { console.log("listenParentEvent", error) }
+    }
   },
 };
 </script>
